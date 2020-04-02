@@ -1,29 +1,47 @@
-# README #
+<<<<<<< HEAD
+# Xsync API
 
-This README would normally document whatever steps are necessary to get your application up and running.
+> Xsync api server for BMM.
 
-### What is this repository for? ###
+# Run Development
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+- docker-compose up
+- yarn
+- yarn dev-start-nodemon
 
-### How do I get set up? ###
+# Run Product
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+- yarn start
 
-### Contribution guidelines ###
+# Pre-reqs
 
-* Writing tests
-* Code review
-* Other guidelines
+To build and run this app locally you will need a few things:
 
-### Who do I talk to? ###
+- docker
+- node.js
+- VS code
+- Require your mongodb dump file in ./mongo-dump.
+  > ./mongo-dump/ `<dump files>`
 
-* Repo owner or admin
-* Other community or team contact
+# Server specific
+
+- Server
+  - nodejs:8
+- Language
+  - typescript
+- ORM: typeorm
+  - mysql
+  - mongodb
+- Build tools
+  - webpack
+- Docker-compose
+- Referrence
+  - MS Typescript nodejs starter
+
+# Description
+
+This api server is BMM. But it will be merged with legacy 2.0 server.
+
+# API (Postman)
+
+[LINK](https://documenter.getpostman.com/view/105985/SVYjTNCo)

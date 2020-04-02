@@ -1,0 +1,23 @@
+{
+    "recommendations": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "hollowtree.vue-snippets",
+        "dariofuzinato.vue-peek",
+        "octref.vetur",
+        "tombonnike.vscode-status-bar-format-toggle",
+        "steoates.autoimport",
+        "michelemelluso.code-beautifier",
+        "aaron-bond.better-comments",
+        "alefragnani.bookmarks",
+        "streetsidesoftware.code-spell-checker",
+        "ms-azuretools.vscode-docker",
+        "p1c2u.docker-compose",
+        "joelday.docthis",
+        "donjayamanne.githistory",
+        "felipecaputo.git-project-manager",
+        "codezombiech.gitignore",
+        "christian-kohler.npm-intellisense",
+        "eamodio.gitlens"
+    ]
+}

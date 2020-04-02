@@ -1,0 +1,10 @@
+image: atlassian/default-image:latest
+pipelines:
+    branches:
+        test:
+            - step:
+                  name: Build & Deploy
+                  deployment: test
+                  script:
+                      - ssh centos@$(echo $DEPLOY_SERVER_IP) 'bash -s' < ./run.sh
+                      - echo 'Deploy success!!!'

@@ -1,0 +1,8 @@
+FROM node:lts-alpine as production
+WORKDIR /usr/src/app
+ENV NODE_ENV=development
+ENV HOST=0.0.0.0
+ENV PORT=4000
+COPY package*.json ./
+RUN yarn --production=false
+COPY . .

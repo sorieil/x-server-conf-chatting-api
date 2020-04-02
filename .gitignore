@@ -1,0 +1,11 @@
+.idea/
+node_modules/
+tmp/
+temp/
+mongo-dump/
+ormlogs.log
+debug.log
+dist/
+yarn-error.log
+mysql/
+yarn.lock
