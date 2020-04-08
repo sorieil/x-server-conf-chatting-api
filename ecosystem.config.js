@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
         {
-            name: 'Conference API',
+            name: 'Conference chatting API',
             autorestart: true,
             script: './dist/app.js',
             env: {
@@ -10,7 +10,7 @@ module.exports = {
                 watch_delay: 1000,
                 NODE_ENV: 'development',
                 HOST: '0.0.0.0',
-                PORT: 4000,
+                PORT: 4001,
                 MONGO_USERNAME: 'xsync-dev',
                 MONGO_PASSWORD: 'GDxdAeiE6Xpe889u',
                 MONGO_DATABASE: 'xsync-main',
