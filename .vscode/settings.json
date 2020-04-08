@@ -33,7 +33,6 @@
   //   "prettier.stylelintIntegration": true,
   //   "prettier.tslintIntegration": false,
   "editor.formatOnPaste": true,
-  "files.autoSave": "onFocusChange",
   "typescript.tsdk": "node_modules/typescript/lib",
   "javascript.preferences.quoteStyle": "single",
   "typescript.preferences.quoteStyle": "single",
