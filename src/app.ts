@@ -84,6 +84,12 @@ connections(process.env)
             ...chatting.apiPost,
         );
 
+        app.post(
+            RouterV1['networking-chatting-id'],
+            authCheck,
+            ...chatting.apiPostMessage,
+        );
+
         /**s
          * Error Handler. Provides full stack - remove for production
          */

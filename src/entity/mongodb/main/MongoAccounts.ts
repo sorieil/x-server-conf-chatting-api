@@ -7,7 +7,41 @@ export interface PermissionI extends Document {
 
 export interface ProfileI extends Document {
     profileImg: string;
+    profileImgThumb: string;
+    email: string;
+    companyName: string;
+    departmentName: string;
+    address: string;
+    nickname: string;
+    age: string;
+    nationality: string;
+    boyfriend: string;
+    gender: string;
+    favorite: string;
+    Species: string;
+    Class: string;
+    birthday: string;
 }
+
+const ProfileSchema = new Schema({
+    profileImg: { type: String },
+    profileImgThumb: { type: String },
+    email: { type: String },
+    companyName: { type: String },
+    departmentName: { type: String },
+    address: { type: String },
+    nickname: { type: String },
+    age: { type: String },
+    nationality: { type: String },
+    boyfriend: { type: String },
+    gender: { type: String },
+    favorite: { type: String },
+    Species: { type: String },
+    Class: { type: String },
+    birthday: { type: String },
+});
+
+export const profile = model<ProfileI>('profile', ProfileSchema);
 
 export interface AccountsEventI extends Document {
     eventId: Schema.Types.ObjectId;
@@ -20,7 +54,7 @@ export interface AccountsEventI extends Document {
     point: number;
 }
 
-const accountsEventSchema: Schema = new Schema({
+const AccountsEventSchema: Schema = new Schema({
     eventId: { type: Schema.Types.ObjectId },
     name: { type: String },
     joinDt: { type: Date },
@@ -33,7 +67,7 @@ const accountsEventSchema: Schema = new Schema({
 
 export const AccountsEvent = model<AccountsEventI>(
     'eventList',
-    accountsEventSchema,
+    AccountsEventSchema,
 );
 
 export interface AccountsI extends Document {
@@ -57,8 +91,8 @@ export const AccountsSchema: Schema = new Schema({
     phone: { type: String, required: true },
     password: { type: String },
     name: { type: String },
-    eventList: { type: [accountsEventSchema] },
-    profiles: { type: Array },
+    eventList: { type: [AccountsEventSchema] },
+    profiles: { type: ProfileSchema },
     myQRCode: { type: String },
     isDupPhoneNum: {
         type: Boolean,

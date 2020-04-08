@@ -1,13 +1,13 @@
-import {
-    Accounts,
-    AccountsEvent,
-} from './../entity/mongodb/main/MongoAccounts';
+import { ChattingLists } from './../entity/mongodb/main/MongoChattingLists';
+import { _MessageSchemaInChattingMessage } from './../entity/mongodb/main/MongoChattingMessages';
+import { Accounts } from './../entity/mongodb/main/MongoAccounts';
 import { Event } from '../entity/mongodb/main/MongoEvent';
 
 import { Request, Response } from 'express';
 import { responseJson, RequestRole, tryCatch } from '../util/common';
 import { validationResult, check, param, query, body } from 'express-validator';
 import { checkTargetAccountIdEventIdExist } from '../util/validationCheck';
+import ServiceChatting from '../service/mongodb/ServiceChatting';
 
 /**
  * 채팅 목록을 가져온다.
@@ -18,17 +18,23 @@ const apiGet = [
             const method: RequestRole = req.method.toString() as any;
             const errors = validationResult(req);
             const user = req.user as any;
-            const accountsEvent = new AccountsEvent();
+            const event = new Event();
             const accounts = new Accounts();
             accounts._id = user._id;
-            accountsEvent._id = user.eventId;
+            event._id = user.eventId;
 
             if (!errors.isEmpty()) {
                 responseJson(res, errors.array(), method, 'invalid');
                 return;
             }
 
-            responseJson(res, [{ message: '채팅 목록' }], method, 'success');
+            const serviceChatting = new ServiceChatting();
+            const query = await serviceChatting.getChattingListByIdEventId(
+                accounts,
+                event,
+            );
+
+            responseJson(res, query, method, 'success');
         } catch (error) {
             tryCatch(res, error);
         }
@@ -41,7 +47,17 @@ const apiGet = [
  * 그리고 매번 메세지를 보낼때마다 접속 위치를 기록한다.
  */
 const apiPost = [
-    [checkTargetAccountIdEventIdExist.apply(this)],
+    [
+        checkTargetAccountIdEventIdExist.apply(this),
+        body('targetAccountId')
+            .not()
+            .isEmpty()
+            .isString(),
+        body('message')
+            .not()
+            .isEmpty()
+            .isString(),
+    ],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;
@@ -60,41 +76,81 @@ const apiPost = [
                 return;
             }
 
-            responseJson(
-                res,
-                [{ message: '메세지를 성공했습니다.' }],
-                method,
-                'success',
+            const targetAccounts = new Accounts();
+            const message = req.body.message;
+            const serviceChatting = new ServiceChatting();
+
+            targetAccounts._id = req.body.targetAccountId;
+
+            const query = await serviceChatting.postSendMessage(
+                accounts,
+                targetAccounts,
+                event,
+                message,
             );
+            responseJson(res, [query], method, 'success');
         } catch (error) {
             tryCatch(res, error);
         }
     },
 ];
 
-// 사진 첨부하기..? 노노!!!
-// const apiDeleteFavorite = [
-//     async (req: Request, res: Response) => {
-//         try {
-//             const method: RequestRole = req.method.toString() as any;
-//             const errors = validationResult(req);
-//             const user = req.user as any;
-//             const event = new Event();
-//             event._id = user.eventId;
+/**
+ * 메세지만 전달
+ */
+const apiPostMessage = [
+    [
+        body('message')
+            .not()
+            .isEmpty()
+            .isString(),
+    ],
+    async (req: Request, res: Response) => {
+        try {
+            const method: RequestRole = req.method.toString() as any;
+            const errors = validationResult(req);
+            const user = req.user as any;
+            const accounts = new Accounts();
+            accounts._id = user._id;
 
-//             if (!errors.isEmpty()) {
-//                 responseJson(res, errors.array(), method, 'invalid');
-//                 return;
-//             }
+            if (!errors.isEmpty()) {
+                responseJson(res, errors.array(), method, 'invalid');
+                return;
+            }
 
-//             responseJson(res, [], method, 'success');
-//         } catch (error) {
-//             tryCatch(res, error);
-//         }
-//     },
-// ];
+            const message = req.body.message;
+            const serviceChatting = new ServiceChatting();
+            const chattingLists = new ChattingLists();
+            chattingLists._id = req.params.chattingListId;
+            const queryChattingListId = await serviceChatting.checkChattingListIdExist(
+                chattingLists,
+            );
+
+            if (queryChattingListId) {
+                const query = await serviceChatting.postSendMessageById(
+                    accounts,
+                    chattingLists,
+                    message,
+                );
+                responseJson(res, [query], method, 'success');
+            } else {
+                responseJson(
+                    res,
+                    [{ message: '존재하지 않는 채팅입니다.' }],
+                    method,
+                    'fails',
+                );
+            }
+            // 바로 메세지를 보낸다.
+            // 실제로 존재하는 chattingListId 인지 체크 한다. (내부 로직에서 처리한다.)
+        } catch (error) {
+            tryCatch(res, error);
+        }
+    },
+];
 
 export default {
     apiGet,
     apiPost,
+    apiPostMessage,
 };

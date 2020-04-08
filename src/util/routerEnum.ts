@@ -8,4 +8,5 @@ export enum RouterV1 {
     'networking-participants-lists' = '/api/v1/networking-participants-lists',
     'networking-participants-favorite' = '/api/v1/networking-participants-favorite',
     'networking-chatting' = '/api/v1/networking-chatting',
+    'networking-chatting-id' = '/api/v1/networking-chatting/:chattingListId',
 }

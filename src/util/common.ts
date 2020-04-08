@@ -36,6 +36,7 @@ export const responseJson = (
     console.log(
         `<<<<<<<<<<<<< Log End <<<<<<<<<<<< URL => [${requestType}:${responseType}:${res.req.originalUrl}]`,
     );
+
     if (responseType === 'success') {
         if (data.length > 0 && isArray(data)) {
             const code = responseRole[requestType].success;
@@ -79,15 +80,15 @@ export const responseJson = (
 };
 
 export const tryCatch = (res: Response, error: any): Response => {
+    // Slack에 에러 실시간 리포트
     if (process.env.NODE_ENV === 'production') {
         const request = require('request');
-
         const headers = {
             'Content-type': 'application/json',
         };
         const user = res.req.user as any;
         const errorMessage = ` id: ${user._id} \n eventId: ${user.eventId} \n name: ${user.name}`;
-        const dataString = `{"text":"${error} \n ${res.req.originalUrl} \n${errorMessage}"}`;
+        const dataString = `{"text":"${error} \n ${res.req.originalUrl} \n${errorMessage} \n ${res.req.body}"}`;
         const options = {
             url:
                 'https://hooks.slack.com/services/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',
