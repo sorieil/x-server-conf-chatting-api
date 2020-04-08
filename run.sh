@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-git clone https://xsync_jhkim@bitbucket.org/xsync_development/.git
+git clone git@bitbucket.org:xsync_development/server-conference-chatting-api.git
 echo "Clone success"
 cd ~/server-conference-chatting-api-new
 git checkout -t origin/test
