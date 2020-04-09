@@ -10,9 +10,9 @@ echo "Clone success"
 cd $DIR
 git checkout -t origin/test
 echo "Success git pull"
-npm i
+yarn
 echo "Success install node_moduels"
-tsc
+npx tsc
 echo "Success Build"
 cd ~
 rm -rf server-conference-chatting-api

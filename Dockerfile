@@ -7,7 +7,7 @@ RUN yarn global add pm2
 RUN yarn global typescript
 RUN pm2 install typescript
 COPY package*.json ./
-RUN npm i
+RUN yarn
 COPY . .
 RUN tsc
 CMD ["pm2-docker", "start", "ecosystem.config.js", "--env=production"]

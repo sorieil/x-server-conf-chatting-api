@@ -7,7 +7,7 @@
     "license": "MIT",
     "private": true,
     "scripts": {
-        "dev": "clear && NODE_ENV=development nodemon --exec ts-node ./src/app.ts",
+        "dev": "clear && NODE_ENV=development npx nodemon --exec npx ts-node ./src/app.ts",
         "start": "pm2 startOrRestart ecosystem.config.js --force ts-node -- -P tsconfig.json ./src/app.ts",
         "stop": "pm2 stop all",
         "lint": "tsc --noEmit && eslint '*/**/*.{ts,tsx}' --quiet --fix"
@@ -57,7 +57,7 @@
         "ts-jest": "^24.0.2",
         "ts-loader": "^6.0.4",
         "ts-node": "3.3.0",
-        "typescript": "3.3.3333",
+        "typescript": "^3.8.3",
         "webpack": "^4.35.0",
         "webpack-cli": "^3.3.5",
         "webpack-dev-server": "^3.7.2",
