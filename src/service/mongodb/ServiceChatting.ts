@@ -10,7 +10,7 @@ import {
 } from './../../entity/mongodb/main/MongoChattingLists';
 import { EventI } from '../../entity/mongodb/main/MongoEvent';
 import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
-import { firebaseAdmin } from '../../util/Firebase';
+import { firebaseAdmin } from '../../util/firebase';
 export default class ServiceChatting {
     constructor() {}
 
