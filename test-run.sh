@@ -5,7 +5,7 @@ if [ -d "$DIR" ]; then
     rm -rf $DIR
     echo "Delete " + $DIR
 fi
-git clone https://xsync_development@bitbucket.org/xsync_development/server-conference-chatting-api.git $DIR
+git clone https://xsyncdev@bitbucket.org/xsync_development/server-conference-chatting-api.git $DIR
 echo "Clone success"
 cd $DIR
 git checkout -t origin/test
