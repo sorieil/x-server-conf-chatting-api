@@ -32,7 +32,7 @@ module.exports = {
                 watch: false,
                 NODE_ENV: 'production',
                 HOST: '0.0.0.0',
-                PORT: 4000,
+                PORT: 4001,
                 MONGO_USERNAME: 'xsync-dev',
                 MONGO_PASSWORD: 'GDxdAeiE6Xpe889u',
                 MONGO_DATABASE: 'xsync-main',
