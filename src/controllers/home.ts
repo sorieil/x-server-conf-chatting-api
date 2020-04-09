@@ -29,8 +29,7 @@ const apiGet = [
                 responseJson(res, errors.array(), method, 'invalid');
                 return;
             }
-
-            const searchDate = req.query.date;
+            const searchDate: string = req.query.date as any;
             const serviceEvent = new ServiceEvent();
             const serviceCommunities = new ServiceCommunities();
             const serviceSchedule = new ServiceSchedule();
@@ -38,6 +37,7 @@ const apiGet = [
             const queryCommunities = await serviceCommunities.getCommunitiesByEvenId(
                 event,
             );
+
             const querySchedule = await serviceSchedule.getScheduleByEventId(
                 event,
                 searchDate,
