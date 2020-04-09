@@ -10,10 +10,8 @@ import errorHandler from 'errorhandler';
 import { auth } from './util/passport';
 import helmet = require('helmet');
 import cors = require('cors');
-import { connections, connectionsMongodb } from './util/db';
+import { connections } from './util/db';
 import chalk from 'chalk';
-import home from './controllers/home';
-import networking from './controllers/networking';
 import chatting from './controllers/chatting';
 
 connections(process.env)
@@ -58,23 +56,6 @@ connections(process.env)
         app.get(RouterV1['root'], async (_req: Request, res: Response) => {
             responseJson(res, [{ message: `start` }], 'GET', 'success');
         });
-
-        app.get(RouterV1['home'], authCheck, ...home.apiGet);
-        app.get(
-            RouterV1['networking-participants-lists'],
-            authCheck,
-            ...networking.apiGet,
-        );
-        app.post(
-            RouterV1['networking-participants-favorite'],
-            authCheck,
-            ...networking.apiPostFavorite,
-        );
-        app.delete(
-            RouterV1['networking-participants-favorite'],
-            authCheck,
-            ...networking.apiDeleteFavorite,
-        );
 
         app.get(RouterV1['networking-chatting'], authCheck, ...chatting.apiGet);
 
