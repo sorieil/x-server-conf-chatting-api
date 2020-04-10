@@ -13,7 +13,7 @@ git checkout -t origin/test
 echo "Success git pull"
 yarn
 echo "Success install node_moduels"
-tsc
+# tsc
 echo "Success Build"
 cd ~
 rm -rf server-conference-chatting-api
