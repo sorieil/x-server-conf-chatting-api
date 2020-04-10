@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-sudo apt install node-typescript
 DIR="server-conference-chatting-api-new"
 if [ -d "$DIR" ]; then
     rm -rf $DIR
