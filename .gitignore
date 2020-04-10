@@ -5,7 +5,7 @@ temp/
 mongo-dump/
 ormlogs.log
 debug.log
-dist/
+# dist/
 yarn-error.log
 mysql/
 yarn.lock

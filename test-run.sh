@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+sudo apt install node-typescript
 DIR="server-conference-chatting-api-new"
 if [ -d "$DIR" ]; then
     rm -rf $DIR
@@ -12,7 +13,7 @@ git checkout -t origin/test
 echo "Success git pull"
 yarn
 echo "Success install node_moduels"
-npx tsc
+tsc
 echo "Success Build"
 cd ~
 rm -rf server-conference-chatting-api

@@ -1,0 +1,1 @@
+{"version":3,"file":"MongoCommonSchema.js","sourceRoot":"","sources":["../../../../src/entity/mongodb/main/MongoCommonSchema.ts"],"names":[],"mappings":";;AAAA,uCAAkC;AAClC,mDAA4D;AAE/C,QAAA,YAAY,GAAW,IAAI,iBAAM,CAAC;IAC3C,SAAS,EAAE,EAAE,IAAI,EAAE,8BAAc,EAAE;IACnC,QAAQ,EAAE,EAAE,IAAI,EAAE,IAAI,EAAE;IACxB,MAAM,EAAE,EAAE,IAAI,EAAE,MAAM,EAAE;CAC3B,CAAC,CAAC"}

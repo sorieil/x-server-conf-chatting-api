@@ -166,7 +166,7 @@ export default class ServiceChatting {
             saveChattingMessage.chattingListId = beforeChatting[0]._id;
 
             const query = await saveChattingMessage.save();
-            console.log('chatting message id:', query);
+            // console.log('chatting message id:', query);
             await firebaseAdmin
                 .firestore()
                 .collection('chatting')
@@ -207,7 +207,7 @@ export default class ServiceChatting {
         saveChattingMessage.chattingListId = chattingLists._id;
 
         const query = await saveChattingMessage.save();
-        console.log('chatting message id:', query);
+        // console.log('chatting message id:', query);
         await firebaseAdmin
             .firestore()
             .collection('chatting')
