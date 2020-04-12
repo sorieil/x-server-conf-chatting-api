@@ -42,7 +42,8 @@ const apiGet = [
                     for (let m = 0; m < row.membersInformation.length; m++) {
                         const user = row.membersInformation[m];
                         if (user._id.toString() === accounts._id.toString()) {
-                            delete row.membersInformation[m];
+                            // delete row.membersInformation[m];
+                            row.membersInformation.splice(m, 1);
                         }
 
                         delete user._id;
