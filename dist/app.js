@@ -65,8 +65,14 @@ db_1.connections(process.env)
     app.get(routerEnum_1.RouterV1['root'], (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         common_1.responseJson(res, [{ message: `start` }], 'GET', 'success');
     }));
+    // 채팅 리스트
     app.get(routerEnum_1.RouterV1['networking-chatting'], authCheck, ...chatting_1.default.apiGet);
+    // 채팅방 정보
+    app.get(routerEnum_1.RouterV1['networking-chatting-detail'], authCheck, ...chatting_1.default.apiGetDetail);
+    app.get(routerEnum_1.RouterV1['networking-chatting-check-history'], authCheck, ...chatting_1.default.apiGetCheckChatHistory);
+    // 채팅 시작 및 메세지 보내기
     app.post(routerEnum_1.RouterV1['networking-chatting'], authCheck, ...chatting_1.default.apiPost);
+    // 채팅방 아이디로 메세지 보내기
     app.post(routerEnum_1.RouterV1['networking-chatting-id'], authCheck, ...chatting_1.default.apiPostMessage);
     /**s
      * Error Handler. Provides full stack - remove for production

@@ -17,19 +17,129 @@ class ServiceChatting {
     constructor() { }
     getChattingListByIdEventId(accounts, event) {
         return __awaiter(this, void 0, void 0, function* () {
+            const query = yield MongoChattingLists_1.ChattingLists.aggregate([
+                {
+                    $match: {
+                        eventId: event._id,
+                        members: { $in: [accounts._id] },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'accounts',
+                        localField: 'members',
+                        foreignField: '_id',
+                        as: 'membersInformation',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        lastText: 1,
+                        status: 1,
+                        updatedAt: 1,
+                        membersInformation: { _id: 1, profiles: 1, name: 1 },
+                    },
+                },
+            ]).exec();
+            return query;
+        });
+    }
+    /**
+     * 조회 하고자 하는 채팅방에 소속되어 있는지 체크 한다.
+     * @param chattingLists 채팅방 아이디 값
+     * @param accounts 조회 하고자 하는 회원의 아이디 값
+     */
+    getChattingById(chattingLists, accounts) {
+        return __awaiter(this, void 0, void 0, function* () {
             const query = yield MongoChattingLists_1.ChattingLists.find({
-                eventId: event._id,
+                _id: chattingLists._id,
                 members: { $in: [accounts._id] },
             }).exec();
             return query;
         });
     }
+    /**
+     * 조회 하고자 하는 채팅방에 소속된 맴버의 디테일한 정보를 가져온다.
+     * @param chattingLists 채팅방 아이디 값
+     * @param accounts 조회 하고자 하는 회원의 아이디 값
+     */
+    getChattingMemberDetailById(chattingLists, accounts) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const query = yield MongoChattingLists_1.ChattingLists.aggregate([
+                {
+                    $match: {
+                        _id: chattingLists._id,
+                        members: { $in: [accounts._id] },
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'accounts',
+                        localField: 'members',
+                        foreignField: '_id',
+                        as: 'membersDetail',
+                    },
+                },
+                {
+                    $project: { membersDetail: { profiles: 1, name: 1, _id: 1 } },
+                },
+            ]).exec();
+            // 여기에서 나와, 내가 아닌 맴버를 구분지어 줘야 한다.
+            // 모던 방식과, For문 방식의 비교.. 코딩양...
+            // const queryConvert = query.map((v: any) => {
+            //     // 반복문을 한번만 돌려서 객체를 설정해준다.
+            //     const me = v.membersDetail.filter(
+            //         (f: any) => f._id.toString() === accounts._id.toString(),
+            //     );
+            //     const your = v.membersDetail.filter(
+            //         (f: any) => f._id.toString() !== accounts._id.toString(),
+            //     );
+            //     return { me, your, id: v._id };
+            // });
+            const qc = yield new Promise(resolve => {
+                const me = [];
+                const your = [];
+                for (let i = 0; i < query.length; i++) {
+                    const row = query[i];
+                    const rowMembers = row.membersDetail;
+                    // 맴버가 존재 하면,
+                    if (rowMembers.length > 0) {
+                        // 자식 기준으로 For
+                        for (let m = 0; m < rowMembers.length; m++) {
+                            // 자식을 담아주고,
+                            const member = rowMembers[m];
+                            // 나와 내가 아닌 걸 분리
+                            if (member._id.toString() === accounts._id.toString()) {
+                                me.push(member);
+                            }
+                            else {
+                                your.push(member);
+                            }
+                        }
+                    }
+                    else {
+                        //  자식이 없으면, 아무것도 하면 안되징..
+                    }
+                }
+                resolve({ me, your });
+            });
+            // 배열로 리턴
+            return [qc];
+        });
+    }
     // 대화가 처음인지 아닌지 체크
     checkInitChattingHistory(accounts, targetAccounts) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(accounts, targetAccounts);
             const query = MongoChattingLists_1.ChattingLists.find({
-                members: { $all: [accounts._id, targetAccounts._id] },
-            }).exec();
+                members: {
+                    $all: [accounts._id, targetAccounts._id],
+                },
+            })
+                .populate('members')
+                .populate('membersInformation')
+                .exec();
             return query;
         });
     }
@@ -66,10 +176,8 @@ class ServiceChatting {
      */
     postSendMessage(accounts, targetAccounts, event, message) {
         return __awaiter(this, void 0, void 0, function* () {
-            const chattingLists = new MongoChattingLists_1.ChattingLists();
             // 기존 채팅 내역이 있는지 체크 한다.
             const beforeChatting = yield this.checkInitChattingHistory(accounts, targetAccounts);
-            console.log('회원 아아디로 채팅 아이디 찾기:', beforeChatting);
             /*
             1. 혹시 모를 데이터 무결성을 위해서 대화맴버 기준으로
                채팅을 조회 한다.
@@ -95,6 +203,7 @@ class ServiceChatting {
                 const saveChattingList = new MongoChattingLists_1.ChattingLists();
                 saveChattingList.lastText = message;
                 saveChattingList.createdAt = new Date();
+                saveChattingList.updatedAt = new Date();
                 saveChattingList.members = [accounts._id, targetAccounts._id];
                 saveChattingList.membersInformation = memberBucket;
                 saveChattingList.eventId = event._id;
@@ -123,12 +232,10 @@ class ServiceChatting {
             }
             else {
                 // 기존의 채팅에 업데이트를 해준다.
-                // 채팅방 생성
-                const chattingList = new MongoChattingLists_1.ChattingLists();
-                chattingList.lastText = message;
-                chattingList.updatedAt = new Date();
-                // 채팅 상태 업데이트
-                yield MongoChattingLists_1.ChattingLists.updateOne({ id: beforeChatting[0]._id }, { $set: chattingList });
+                yield MongoChattingLists_1.ChattingLists.findByIdAndUpdate(beforeChatting[0]._id, {
+                    lastText: message,
+                    updatedAt: new Date(),
+                });
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
                 saveChattingMessage.accountId = accounts._id;
@@ -137,7 +244,7 @@ class ServiceChatting {
                 saveChattingMessage.fileupload = [];
                 saveChattingMessage.chattingListId = beforeChatting[0]._id;
                 const query = yield saveChattingMessage.save();
-                console.log('chatting message id:', query);
+                // console.log('chatting message id:', query);
                 yield firebase_1.firebaseAdmin
                     .firestore()
                     .collection('chatting')
@@ -159,7 +266,10 @@ class ServiceChatting {
             chattingList.lastText = message;
             chattingList.updatedAt = new Date();
             // 채팅 상태 업데이트
-            yield MongoChattingLists_1.ChattingLists.updateOne({ id: chattingLists._id }, { $set: chattingList });
+            const update = yield MongoChattingLists_1.ChattingLists.findByIdAndUpdate(chattingLists._id, { lastText: message, updatedAt: new Date() });
+            console.log('new ChattingList:', chattingList);
+            console.log('Received ChattingList:', chattingLists);
+            console.log('UpdateOne:', update);
             // 채팅내용 저장
             const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
             saveChattingMessage.accountId = accounts._id;
@@ -168,7 +278,7 @@ class ServiceChatting {
             saveChattingMessage.fileupload = [];
             saveChattingMessage.chattingListId = chattingLists._id;
             const query = yield saveChattingMessage.save();
-            console.log('chatting message id:', query);
+            // console.log('chatting message id:', query);
             yield firebase_1.firebaseAdmin
                 .firestore()
                 .collection('chatting')
