@@ -80,6 +80,44 @@ const apiGetDetail = [
 ];
 
 /**
+ * 선택한 회원과 채팅 이 존재 하는지 체크 한다.
+ */
+const apiGetCheckChatHistory = [
+    [
+        param('targetAccountId')
+            .not()
+            .isEmpty(),
+    ],
+    async (req: Request, res: Response) => {
+        try {
+            const method: RequestRole = req.method.toString() as any;
+            const errors = validationResult(req);
+            const user = req.user as any;
+            const accounts = new Accounts();
+            const targetAccounts = new Accounts();
+            targetAccounts._id = req.params.targetAccountId;
+            accounts._id = user._id;
+
+            // 정보는 위 권한 메서드에서 처리 합니다.
+            if (!errors.isEmpty()) {
+                responseJson(res, errors.array(), method, 'invalid');
+                return;
+            }
+
+            const service = new ServiceChatting();
+            const query = await service.checkInitChattingHistory(
+                accounts,
+                targetAccounts,
+            );
+
+            responseJson(res, query, method, 'success');
+        } catch (error) {
+            tryCatch(res, error);
+        }
+    },
+];
+
+/**
  * 채팅을 보낸다.
  * 채팅을 보낼때는 서버를 통해서 보낸다.
  * TODO 조건: 유저의 마지먹 접속 디바이스를 조회 하고, 5분이 이상 api 통신 이력이 없는 경우, 모바일로 푸쉬를 보내준다.
@@ -88,10 +126,6 @@ const apiGetDetail = [
 const apiPost = [
     [
         checkTargetAccountIdAndEventIdExist.apply(this),
-        body('targetAccountId')
-            .not()
-            .isEmpty()
-            .isString(),
         body('message')
             .not()
             .isEmpty()
@@ -193,4 +227,5 @@ export default {
     apiPost,
     apiPostMessage,
     apiGetDetail,
+    apiGetCheckChatHistory,
 };

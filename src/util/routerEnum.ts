@@ -10,4 +10,5 @@ export enum RouterV1 {
     'networking-chatting' = '/api/v1/networking-chatting',
     'networking-chatting-id' = '/api/v1/networking-chatting/:chattingListId',
     'networking-chatting-detail' = '/api/v1/networking-chatting/:chattingListId/detail',
+    'networking-chatting-check-history' = '/api/v1/networking-chatting-check-history/:targetAccountId',
 }

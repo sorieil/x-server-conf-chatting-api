@@ -67,6 +67,12 @@ connections(process.env)
             ...chatting.apiGetDetail,
         );
 
+        app.get(
+            RouterV1['networking-chatting-check-history'],
+            authCheck,
+            ...chatting.apiGetCheckChatHistory,
+        );
+
         // 채팅 시작 및 메세지 보내기
         app.post(
             RouterV1['networking-chatting'],

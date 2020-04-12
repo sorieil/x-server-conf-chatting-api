@@ -120,11 +120,15 @@ export default class ServiceChatting {
         accounts: AccountsI,
         targetAccounts: AccountsI,
     ) {
+        console.log(accounts, targetAccounts);
         const query = ChattingLists.find({
             members: {
                 $all: [accounts._id, targetAccounts._id],
             },
-        }).exec();
+        })
+            .populate('members')
+            .populate('membersInformation')
+            .exec();
 
         return query;
     }
@@ -284,10 +288,13 @@ export default class ServiceChatting {
         chattingList.updatedAt = new Date();
 
         // 채팅 상태 업데이트
-        await ChattingLists.update(
-            { id: chattingLists._id },
-            { $set: chattingList },
+        const update = await ChattingLists.findByIdAndUpdate(
+            chattingLists._id,
+            { lastText: message, updatedAt: new Date() },
         );
+        console.log('new ChattingList:', chattingList);
+        console.log('Received ChattingList:', chattingLists);
+        console.log('UpdateOne:', update);
 
         // 채팅내용 저장
         const saveChattingMessage = new ChattingMessages();
