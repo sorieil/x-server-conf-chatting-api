@@ -195,14 +195,11 @@ export default class ServiceChatting {
         event: EventI,
         message: string,
     ): Promise<any> {
-        const chattingLists = new ChattingLists();
         // 기존 채팅 내역이 있는지 체크 한다.
         const beforeChatting: ChattingListsI[] = await this.checkInitChattingHistory(
             accounts,
             targetAccounts,
         );
-
-        console.log('회원 아아디로 채팅 아이디 찾기:', beforeChatting);
 
         /*
         1. 혹시 모를 데이터 무결성을 위해서 대화맴버 기준으로
@@ -267,10 +264,10 @@ export default class ServiceChatting {
             return query;
         } else {
             // 기존의 채팅에 업데이트를 해준다.
-            await ChattingLists.findByIdAndUpdate(
-                { id: beforeChatting[0]._id },
-                { lastText: message, updatedAt: new Date() },
-            );
+            await ChattingLists.findByIdAndUpdate(beforeChatting[0]._id, {
+                lastText: message,
+                updatedAt: new Date(),
+            });
 
             // 채팅내용 저장
             const saveChattingMessage = new ChattingMessages();
