@@ -57,14 +57,24 @@ connections(process.env)
             responseJson(res, [{ message: `start` }], 'GET', 'success');
         });
 
+        // 채팅 리스트
         app.get(RouterV1['networking-chatting'], authCheck, ...chatting.apiGet);
 
+        // 채팅방 정보
+        app.get(
+            RouterV1['networking-chatting-detail'],
+            authCheck,
+            ...chatting.apiGetDetail,
+        );
+
+        // 채팅 시작 및 메세지 보내기
         app.post(
             RouterV1['networking-chatting'],
             authCheck,
             ...chatting.apiPost,
         );
 
+        // 채팅방 아이디로 메세지 보내기
         app.post(
             RouterV1['networking-chatting-id'],
             authCheck,

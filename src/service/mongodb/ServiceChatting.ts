@@ -26,13 +26,104 @@ export default class ServiceChatting {
         return query;
     }
 
+    /**
+     * 조회 하고자 하는 채팅방에 소속되어 있는지 체크 한다.
+     * @param chattingLists 채팅방 아이디 값
+     * @param accounts 조회 하고자 하는 회원의 아이디 값
+     */
+    public async getChattingById(
+        chattingLists: ChattingListsI,
+        accounts: AccountsI,
+    ): Promise<ChattingListsI[]> {
+        const query = await ChattingLists.find({
+            _id: chattingLists._id,
+            members: { $in: [accounts._id] },
+        }).exec();
+        return query;
+    }
+
+    /**
+     * 조회 하고자 하는 채팅방에 소속된 맴버의 디테일한 정보를 가져온다.
+     * @param chattingLists 채팅방 아이디 값
+     * @param accounts 조회 하고자 하는 회원의 아이디 값
+     */
+    public async getChattingMemberDetailById(
+        chattingLists: ChattingListsI,
+        accounts: AccountsI,
+    ): Promise<any[]> {
+        const query = await ChattingLists.aggregate([
+            {
+                $match: {
+                    _id: chattingLists._id,
+                    members: { $in: [accounts._id] },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'accounts',
+                    localField: 'members',
+                    foreignField: '_id',
+                    as: 'membersDetail',
+                },
+            },
+            {
+                $project: { membersDetail: { profiles: 1, name: 1, _id: 1 } },
+            },
+        ]).exec();
+        // 여기에서 나와, 내가 아닌 맴버를 구분지어 줘야 한다.
+        // 모던 방식과, For문 방식의 비교.. 코딩양...
+        // const queryConvert = query.map((v: any) => {
+        //     // 반복문을 한번만 돌려서 객체를 설정해준다.
+
+        //     const me = v.membersDetail.filter(
+        //         (f: any) => f._id.toString() === accounts._id.toString(),
+        //     );
+        //     const your = v.membersDetail.filter(
+        //         (f: any) => f._id.toString() !== accounts._id.toString(),
+        //     );
+
+        //     return { me, your, id: v._id };
+        // });
+        const qc = await new Promise(resolve => {
+            const me = [];
+            const your = [];
+
+            for (let i = 0; i < query.length; i++) {
+                const row = query[i];
+                const rowMembers = row.membersDetail;
+                // 맴버가 존재 하면,
+                if (rowMembers.length > 0) {
+                    // 자식 기준으로 For
+                    for (let m = 0; m < rowMembers.length; m++) {
+                        // 자식을 담아주고,
+                        const member = rowMembers[m];
+                        // 나와 내가 아닌 걸 분리
+                        if (member._id.toString() === accounts._id.toString()) {
+                            me.push(member);
+                        } else {
+                            your.push(member);
+                        }
+                    }
+                } else {
+                    //  자식이 없으면, 아무것도 하면 안되징..
+                }
+            }
+
+            resolve({ me, your });
+        });
+        // 배열로 리턴
+        return [qc];
+    }
+
     // 대화가 처음인지 아닌지 체크
     public async checkInitChattingHistory(
         accounts: AccountsI,
         targetAccounts: AccountsI,
     ) {
         const query = ChattingLists.find({
-            members: { $all: [accounts._id, targetAccounts._id] },
+            members: {
+                $all: [accounts._id, targetAccounts._id],
+            },
         }).exec();
 
         return query;
@@ -193,7 +284,7 @@ export default class ServiceChatting {
         chattingList.updatedAt = new Date();
 
         // 채팅 상태 업데이트
-        await ChattingLists.updateOne(
+        await ChattingLists.update(
             { id: chattingLists._id },
             { $set: chattingList },
         );

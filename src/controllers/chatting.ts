@@ -1,3 +1,4 @@
+import { checkJoinedChattingMember } from './../util/validationCheck';
 import { ChattingLists } from './../entity/mongodb/main/MongoChattingLists';
 import { _MessageSchemaInChattingMessage } from './../entity/mongodb/main/MongoChattingMessages';
 import { Accounts } from './../entity/mongodb/main/MongoAccounts';
@@ -6,7 +7,7 @@ import { Event } from '../entity/mongodb/main/MongoEvent';
 import { Request, Response } from 'express';
 import { responseJson, RequestRole, tryCatch } from '../util/common';
 import { validationResult, check, param, query, body } from 'express-validator';
-import { checkTargetAccountIdEventIdExist } from '../util/validationCheck';
+import { checkTargetAccountIdAndEventIdExist } from '../util/validationCheck';
 import ServiceChatting from '../service/mongodb/ServiceChatting';
 
 /**
@@ -29,17 +30,55 @@ const apiGet = [
             }
 
             const serviceChatting = new ServiceChatting();
-            const query = await serviceChatting.getChattingListByIdEventId(
+            const query: any[] = await serviceChatting.getChattingListByIdEventId(
                 accounts,
                 event,
             );
+            const queryFilter = query.map(v => {
+                v.membersInformation = v.membersInformation.filter(
+                    (m: any) => m._id.toString() !== user._id.toString(),
+                );
 
-            responseJson(res, query, method, 'success');
+                return v;
+            });
+
+            responseJson(res, queryFilter, method, 'success');
         } catch (error) {
             tryCatch(res, error);
         }
     },
 ];
+
+/**
+ * 채팅 목록의 자세한 정보를 가져온다.
+ */
+const apiGetDetail = [
+    [checkJoinedChattingMember.apply(this)],
+    async (req: Request, res: Response) => {
+        try {
+            const method: RequestRole = req.method.toString() as any;
+            const errors = validationResult(req);
+            const user = req.user as any;
+            const accounts = new Accounts();
+            accounts._id = user._id;
+
+            // 정보는 위 권한 메서드에서 처리 합니다.
+            // 결과 값음 req.chattingLists 로 출력 할 수 있습니다.
+
+            if (!errors.isEmpty()) {
+                responseJson(res, errors.array(), method, 'invalid');
+                return;
+            }
+
+            // 요청자의 정보와, 다른 맴버를 분리 합니다.
+            const chattingLists = user.chattingLists as any;
+            responseJson(res, chattingLists, method, 'success');
+        } catch (error) {
+            tryCatch(res, error);
+        }
+    },
+];
+
 /**
  * 채팅을 보낸다.
  * 채팅을 보낼때는 서버를 통해서 보낸다.
@@ -48,7 +87,7 @@ const apiGet = [
  */
 const apiPost = [
     [
-        checkTargetAccountIdEventIdExist.apply(this),
+        checkTargetAccountIdAndEventIdExist.apply(this),
         body('targetAccountId')
             .not()
             .isEmpty()
@@ -153,4 +192,5 @@ export default {
     apiGet,
     apiPost,
     apiPostMessage,
+    apiGetDetail,
 };
