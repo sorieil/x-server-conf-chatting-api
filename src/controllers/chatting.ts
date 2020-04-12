@@ -9,6 +9,7 @@ import { responseJson, RequestRole, tryCatch } from '../util/common';
 import { validationResult, check, param, query, body } from 'express-validator';
 import { checkTargetAccountIdAndEventIdExist } from '../util/validationCheck';
 import ServiceChatting from '../service/mongodb/ServiceChatting';
+import { resolve } from 'bluebird';
 
 /**
  * 채팅 목록을 가져온다.
@@ -34,15 +35,32 @@ const apiGet = [
                 accounts,
                 event,
             );
-            const queryFilter = query.map(v => {
-                v.membersInformation = v.membersInformation.filter(
-                    (m: any) => m._id.toString() !== user._id.toString(),
-                );
 
-                return v;
+            const convertQuery: any[] = await new Promise(resolve => {
+                for (let i = 0; i < query.length; i++) {
+                    const row = query[i];
+                    for (let m = 0; m < row.membersInformation.length; m++) {
+                        const user = row.membersInformation[m];
+                        if (user._id.toString() === accounts._id.toString()) {
+                            delete row.membersInformation[m];
+                        }
+
+                        delete user._id;
+                    }
+                }
+
+                resolve(query);
             });
 
-            responseJson(res, queryFilter, method, 'success');
+            // const queryFilter = query.map(v => {
+            //     v.membersInformation = v.membersInformation.filter(
+            //         (m: any) => m._id.toString() !== user._id.toString(),
+            //     );
+
+            //     return v;
+            // });
+
+            responseJson(res, convertQuery, method, 'success');
         } catch (error) {
             tryCatch(res, error);
         }

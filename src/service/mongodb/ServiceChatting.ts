@@ -18,10 +18,35 @@ export default class ServiceChatting {
         accounts: AccountsI,
         event: EventI,
     ): Promise<any> {
-        const query = await ChattingLists.find({
-            eventId: event._id,
-            members: { $in: [accounts._id] },
-        }).exec();
+        const query = await ChattingLists.aggregate([
+            {
+                $match: {
+                    eventId: event._id,
+                    members: { $in: [accounts._id] },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'accounts',
+                    localField: 'members',
+                    foreignField: '_id',
+                    as: 'membersInformation',
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    lastText: 1,
+                    status: 1,
+                    updatedAt: 1,
+                    membersInformation: { _id: 1, profiles: 1, name: 1 },
+                },
+            },
+            //     {
+            //     eventId: event._id,
+            //     members: { $in: [accounts._id] },
+            // }
+        ]).exec();
 
         return query;
     }
@@ -210,6 +235,7 @@ export default class ServiceChatting {
             const saveChattingList = new ChattingLists();
             saveChattingList.lastText = message;
             saveChattingList.createdAt = new Date();
+            saveChattingList.updatedAt = new Date();
             saveChattingList.members = [accounts._id, targetAccounts._id];
             saveChattingList.membersInformation = memberBucket;
             saveChattingList.eventId = event._id;
@@ -241,15 +267,9 @@ export default class ServiceChatting {
             return query;
         } else {
             // 기존의 채팅에 업데이트를 해준다.
-            // 채팅방 생성
-            const chattingList = new ChattingLists();
-            chattingList.lastText = message;
-            chattingList.updatedAt = new Date();
-
-            // 채팅 상태 업데이트
-            await ChattingLists.updateOne(
+            await ChattingLists.findByIdAndUpdate(
                 { id: beforeChatting[0]._id },
-                { $set: chattingList },
+                { lastText: message, updatedAt: new Date() },
             );
 
             // 채팅내용 저장
