@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.connectionsMongodb = exports.connections = exports.connectionMysql = void 0;
 const typeorm_1 = require("typeorm");
 const mongoose_1 = require("mongoose");
 exports.connectionMysql = 'mysqlDB';

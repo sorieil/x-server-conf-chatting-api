@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const validationCheck_1 = require("./../util/validationCheck");
 const MongoChattingLists_1 = require("./../entity/mongodb/main/MongoChattingLists");
+const MongoChattingMessages_1 = require("./../entity/mongodb/main/MongoChattingMessages");
 const MongoAccounts_1 = require("./../entity/mongodb/main/MongoAccounts");
 const MongoEvent_1 = require("../entity/mongodb/main/MongoEvent");
 const common_1 = require("../util/common");
@@ -39,7 +40,19 @@ const apiGet = [
             }
             const serviceChatting = new ServiceChatting_1.default();
             const query = yield serviceChatting.getChattingListByIdEventId(accounts, event);
-            const convertQuery = yield new Promise(resolve => {
+            console.log(query);
+            for (let i = 0; i < query.length; i++) {
+                const chattingListId = query[i]._id;
+                query[i].notReadCount = yield serviceChatting.getUnreadCount(chattingListId, accounts._id);
+                // for (let j = 0; j < query[i].membersInformation.length; j++) {
+                //     const memberInformation = query[i].membersInformation[j];
+                //     memberInformation.notReadCount = await serviceChatting.getUnreadCount(
+                //          chattingListId,
+                //          accounts._id,
+                //     );
+                // }
+            }
+            const convertQuery = yield new Promise((resolve) => {
                 for (let i = 0; i < query.length; i++) {
                     const row = query[i];
                     for (let m = 0; m < row.membersInformation.length; m++) {
@@ -60,6 +73,43 @@ const apiGet = [
             //     return v;
             // });
             common_1.responseJson(res, convertQuery, method, 'success');
+        }
+        catch (error) {
+            common_1.tryCatch(res, error);
+        }
+    }),
+];
+const apiGetNotReadCount = [
+    (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const method = req.method.toString();
+            const errors = express_validator_1.validationResult(req);
+            const user = req.user;
+            const event = new MongoEvent_1.Event();
+            const accounts = new MongoAccounts_1.Accounts();
+            accounts._id = user._id;
+            event._id = user.eventId;
+            if (!errors.isEmpty()) {
+                common_1.responseJson(res, errors.array(), method, 'invalid');
+                return;
+            }
+            const serviceChatting = new ServiceChatting_1.default();
+            const totalNotReadCount = yield serviceChatting.getTotalNotReadCount(accounts._id, event._id);
+            // const queryFilter = query.map(v => {
+            //     v.membersInformation = v.membersInformation.filter(
+            //         (m: any) => m._id.toString() !== user._id.toString(),
+            //     );
+            //     return v;
+            // });
+            const result = [
+                {
+                    format: 'number',
+                    dataLabel: '읽지 않은 메세지 수',
+                    type: 'totalNotReadCount',
+                    value: totalNotReadCount,
+                },
+            ];
+            common_1.responseJson(res, result, method, 'success');
         }
         catch (error) {
             common_1.tryCatch(res, error);
@@ -93,15 +143,59 @@ const apiGetDetail = [
         }
     }),
 ];
+const apiPostStatusChange = [
+    [express_validator_1.param('chattingListId').not().isEmpty()],
+    (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const method = req.method.toString();
+            const errors = express_validator_1.validationResult(req);
+            const chattingListId = req.params.chattingListId;
+            const user = req.user;
+            const accounts = new MongoAccounts_1.Accounts();
+            const chattingList = new MongoChattingLists_1.ChattingLists();
+            chattingList._id = req.params.chattingListId;
+            const currentDate = new Date();
+            accounts._id = user._id;
+            //1. 어떤 채팅방인지 알아야겠지? => chattingListId를 받는 것으로 해결.
+            //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
+            const serviceChatting = new ServiceChatting_1.default();
+            const unReadMessageList = yield MongoChattingMessages_1.ChattingMessages.find({
+                $and: [
+                    { 'readMembers.accountId': { $nin: [user._id] } },
+                    { chattingListId: chattingList._id },
+                ],
+            });
+            //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
+            for (let i = 0; i < unReadMessageList.length; i++) {
+                const unReadMessage = unReadMessageList[i];
+                unReadMessage.readMembers.push({
+                    accountId: user._id,
+                    readDate: currentDate,
+                });
+                //4. 몽고DB에 저장
+                unReadMessage.save();
+            }
+            console.log('unReadMessageList:::', unReadMessageList);
+            const result = [];
+            result.push({
+                data: [
+                    {
+                        message: 'Update message status complete!',
+                    },
+                ],
+            });
+            common_1.responseJson(res, result, method, 'success');
+        }
+        catch (error) {
+            common_1.tryCatch(res, error);
+        }
+    }),
+];
 /**
  * 선택한 회원과 채팅 이 존재 하는지 체크 한다.
  */
 const apiGetCheckChatHistory = [
-    [
-        express_validator_1.param('targetAccountId')
-            .not()
-            .isEmpty(),
-    ],
+    [express_validator_1.param('targetAccountId').not().isEmpty()],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const method = req.method.toString();
@@ -134,10 +228,7 @@ const apiGetCheckChatHistory = [
 const apiPost = [
     [
         validationCheck_2.checkTargetAccountIdAndEventIdExist.apply(this),
-        express_validator_1.body('message')
-            .not()
-            .isEmpty()
-            .isString(),
+        express_validator_1.body('message').not().isEmpty().isString(),
     ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -170,12 +261,7 @@ const apiPost = [
  * 메세지만 전달
  */
 const apiPostMessage = [
-    [
-        express_validator_1.body('message')
-            .not()
-            .isEmpty()
-            .isString(),
-    ],
+    [express_validator_1.body('message').not().isEmpty().isString()],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const method = req.method.toString();
@@ -211,6 +297,8 @@ exports.default = {
     apiGet,
     apiPost,
     apiPostMessage,
+    apiReadStatusChange: apiPostStatusChange,
+    apiGetNotReadCount,
     apiGetDetail,
     apiGetCheckChatHistory,
 };

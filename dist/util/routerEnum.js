@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RouterV1 = void 0;
 /**
  * @description
  * 중복 라우팅을 방지 하고, 정렬을 위해서
@@ -11,6 +12,8 @@ var RouterV1;
     RouterV1["networking-participants-lists"] = "/api/v1/networking-participants-lists";
     RouterV1["networking-participants-favorite"] = "/api/v1/networking-participants-favorite";
     RouterV1["networking-chatting"] = "/api/v1/networking-chatting";
+    RouterV1["networking-chatting-notReadCount"] = "/api/v1/networking-chatting/notReadCount";
+    RouterV1["networking-chatting-readStatusChange"] = "/api/v1/networking-chatting/:chattingListId/readStatusChange";
     RouterV1["networking-chatting-id"] = "/api/v1/networking-chatting/:chattingListId";
     RouterV1["networking-chatting-detail"] = "/api/v1/networking-chatting/:chattingListId/detail";
     RouterV1["networking-chatting-check-history"] = "/api/v1/networking-chatting-check-history/:targetAccountId";

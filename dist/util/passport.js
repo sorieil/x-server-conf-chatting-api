@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.auth = void 0;
 const MongoAccounts_1 = require("./../entity/mongodb/main/MongoAccounts");
 const passport_jwt_1 = require("passport-jwt");
 const passport_1 = __importDefault(require("passport"));

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.SESSION_SECRET = void 0;
 // import shell from 'shelljs';
 if (Object.entries(process.env).length > 1) {
     // logger.debug('Using NODE_ENV variable.!!!');
