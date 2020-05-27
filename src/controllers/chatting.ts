@@ -199,13 +199,15 @@ const apiPostStatusChange = [
 
             //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
             for (let i = 0; i < unReadMessageList.length; i++) {
-                unReadMessageList[i].readMembers.push({
+                const unReadMessage: ChattingMessagesI = unReadMessageList[i];
+
+                unReadMessage.readMembers.push({
                     accountId: user._id,
                     readDate: currentDate,
                 });
+                //4. 몽고DB에 저장
+                unReadMessage.save();
             }
-
-            //unReadMessageList.save();
 
             console.log('unReadMessageList:::', unReadMessageList);
 
