@@ -18,13 +18,25 @@ export const _MessageSchemaInChattingMessage = model<MessageI>(
     MessageSchema,
 );
 
+export interface ReadMembersI extends Document {
+    accountId: Schema.Types.ObjectId;
+    readDate: Date;
+}
+
+export const ReadMembersSchema: Schema = new Schema({
+    accountId: Schema.Types.ObjectId,
+    readDate: Date,
+});
+
 export interface ChattingMessagesI extends Document {
+    _id: any;
     accountId: Schema.Types.ObjectId;
     chattingListId: Schema.Types.ObjectId;
     messages: string;
     messageCount: Schema.Types.Number;
     fileupload: any[];
     createdAt: Date;
+    readMembers: any[];
 }
 
 export const ChattingMessagesSchema: Schema = new Schema({
@@ -33,6 +45,7 @@ export const ChattingMessagesSchema: Schema = new Schema({
     messages: { type: String },
     fileupload: { type: Array },
     createdAt: { type: Date },
+    readMembers: { type: Array },
 });
 
 export const ChattingMessages = mongoose.model<ChattingMessagesI>(

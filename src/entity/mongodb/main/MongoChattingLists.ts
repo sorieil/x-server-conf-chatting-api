@@ -24,7 +24,15 @@ export const MemberSchema: Schema = new Schema({
 
 export const MembersInChattingLists = model<MembersI>('members', MemberSchema);
 
+export interface LastMsgInfoI extends Document {
+    accountId: Schema.Types.ObjectId;
+    createdAt: Date;
+    messages: string;
+    chattingListId: Schema.Types.ObjectId;
+}
+
 export interface ChattingListsI extends Document {
+    _id: any;
     lastText: string;
     lastTextCreatedAt: Date;
     createdAt: Date;
@@ -34,7 +42,16 @@ export interface ChattingListsI extends Document {
     status: boolean;
     chattingMessageId: Schema.Types.ObjectId;
     eventId: Schema.Types.ObjectId;
+    lastMsgInfo: LastMsgInfoI;
+    notReadCount: number;
 }
+
+export const LastMsgInfoSchema: Schema = new Schema({
+    accountId: { type: Schema.Types.ObjectId },
+    createdAt: { type: Date },
+    messages: { type: String },
+    chattingListId: { type: Schema.Types.ObjectId },
+});
 
 export const ChattingListsSchema: Schema = new Schema({
     lastText: { type: String },
@@ -46,6 +63,7 @@ export const ChattingListsSchema: Schema = new Schema({
     status: { type: Boolean },
     chattingMessageId: { type: Schema.Types.ObjectId },
     eventId: { type: Schema.Types.ObjectId },
+    notReadCount: { type: Number },
 });
 
 export const ChattingLists = mongoose.model<ChattingListsI>(

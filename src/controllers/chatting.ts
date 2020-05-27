@@ -1,6 +1,14 @@
 import { checkJoinedChattingMember } from './../util/validationCheck';
-import { ChattingLists } from './../entity/mongodb/main/MongoChattingLists';
-import { _MessageSchemaInChattingMessage } from './../entity/mongodb/main/MongoChattingMessages';
+import {
+    ChattingLists,
+    ChattingListsI,
+} from './../entity/mongodb/main/MongoChattingLists';
+import {
+    _MessageSchemaInChattingMessage,
+    ChattingMessages,
+    MessageI,
+    ChattingMessagesI,
+} from './../entity/mongodb/main/MongoChattingMessages';
 import { Accounts } from './../entity/mongodb/main/MongoAccounts';
 import { Event } from '../entity/mongodb/main/MongoEvent';
 
@@ -31,12 +39,30 @@ const apiGet = [
             }
 
             const serviceChatting = new ServiceChatting();
-            const query: any[] = await serviceChatting.getChattingListByIdEventId(
+            const query: ChattingListsI[] = await serviceChatting.getChattingListByIdEventId(
                 accounts,
                 event,
             );
 
-            const convertQuery: any[] = await new Promise(resolve => {
+            console.log(query);
+
+            for (let i = 0; i < query.length; i++) {
+                const chattingListId = query[i]._id;
+                query[i].notReadCount = await serviceChatting.getUnreadCount(
+                    chattingListId,
+                    accounts._id,
+                );
+
+                // for (let j = 0; j < query[i].membersInformation.length; j++) {
+                //     const memberInformation = query[i].membersInformation[j];
+                //     memberInformation.notReadCount = await serviceChatting.getUnreadCount(
+                //          chattingListId,
+                //          accounts._id,
+                //     );
+                // }
+            }
+
+            const convertQuery: any[] = await new Promise((resolve) => {
                 for (let i = 0; i < query.length; i++) {
                     const row = query[i];
                     for (let m = 0; m < row.membersInformation.length; m++) {
@@ -62,6 +88,52 @@ const apiGet = [
             // });
 
             responseJson(res, convertQuery, method, 'success');
+        } catch (error) {
+            tryCatch(res, error);
+        }
+    },
+];
+
+const apiGetNotReadCount = [
+    async (req: Request, res: Response) => {
+        try {
+            const method: RequestRole = req.method.toString() as any;
+            const errors = validationResult(req);
+            const user = req.user as any;
+            const event = new Event();
+            const accounts = new Accounts();
+            accounts._id = user._id;
+            event._id = user.eventId;
+
+            if (!errors.isEmpty()) {
+                responseJson(res, errors.array(), method, 'invalid');
+                return;
+            }
+
+            const serviceChatting = new ServiceChatting();
+            const totalNotReadCount = await serviceChatting.getTotalNotReadCount(
+                accounts._id,
+                event._id,
+            );
+
+            // const queryFilter = query.map(v => {
+            //     v.membersInformation = v.membersInformation.filter(
+            //         (m: any) => m._id.toString() !== user._id.toString(),
+            //     );
+
+            //     return v;
+            // });
+
+            const result = [
+                {
+                    format: 'number',
+                    dataLabel: '읽지 않은 메세지 수',
+                    type: 'totalNotReadCount',
+                    value: totalNotReadCount,
+                },
+            ];
+
+            responseJson(res, result, method, 'success');
         } catch (error) {
             tryCatch(res, error);
         }
@@ -98,15 +170,66 @@ const apiGetDetail = [
     },
 ];
 
+const apiPostStatusChange = [
+    [param('chattingListId').not().isEmpty()],
+    async (req: Request, res: Response) => {
+        try {
+            const method: RequestRole = req.method.toString() as any;
+            const errors = validationResult(req);
+            const chattingListId = req.params.chattingListId;
+            const user = req.user as any;
+            const accounts = new Accounts();
+            const chattingList = new ChattingLists();
+            chattingList._id = req.params.chattingListId;
+            const currentDate = new Date();
+            accounts._id = user._id;
+
+            //1. 어떤 채팅방인지 알아야겠지? => chattingListId를 받는 것으로 해결.
+
+            //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
+            const serviceChatting = new ServiceChatting();
+            const unReadMessageList: ChattingMessagesI[] = await ChattingMessages.find(
+                {
+                    $and: [
+                        { 'readMembers.accountId': { $nin: [user._id] } },
+                        { chattingListId: chattingList._id },
+                    ],
+                },
+            );
+
+            //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
+            for (let i = 0; i < unReadMessageList.length; i++) {
+                unReadMessageList[i].readMembers.push({
+                    accountId: user._id,
+                    readDate: currentDate,
+                });
+            }
+
+            //unReadMessageList.save();
+
+            console.log('unReadMessageList:::', unReadMessageList);
+
+            const result = [];
+            result.push({
+                data: [
+                    {
+                        message: 'Update message status complete!',
+                    },
+                ],
+            });
+
+            responseJson(res, result, method, 'success');
+        } catch (error) {
+            tryCatch(res, error);
+        }
+    },
+];
+
 /**
  * 선택한 회원과 채팅 이 존재 하는지 체크 한다.
  */
 const apiGetCheckChatHistory = [
-    [
-        param('targetAccountId')
-            .not()
-            .isEmpty(),
-    ],
+    [param('targetAccountId').not().isEmpty()],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;
@@ -145,10 +268,7 @@ const apiGetCheckChatHistory = [
 const apiPost = [
     [
         checkTargetAccountIdAndEventIdExist.apply(this),
-        body('message')
-            .not()
-            .isEmpty()
-            .isString(),
+        body('message').not().isEmpty().isString(),
     ],
     async (req: Request, res: Response) => {
         try {
@@ -191,12 +311,7 @@ const apiPost = [
  * 메세지만 전달
  */
 const apiPostMessage = [
-    [
-        body('message')
-            .not()
-            .isEmpty()
-            .isString(),
-    ],
+    [body('message').not().isEmpty().isString()],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;
@@ -245,6 +360,8 @@ export default {
     apiGet,
     apiPost,
     apiPostMessage,
+    apiReadStatusChange: apiPostStatusChange,
+    apiGetNotReadCount,
     apiGetDetail,
     apiGetCheckChatHistory,
 };

@@ -68,9 +68,21 @@ connections(process.env)
         );
 
         app.get(
+            RouterV1['networking-chatting-notReadCount'],
+            authCheck,
+            ...chatting.apiGetNotReadCount,
+        );
+
+        app.get(
             RouterV1['networking-chatting-check-history'],
             authCheck,
             ...chatting.apiGetCheckChatHistory,
+        );
+
+        app.post(
+            RouterV1['networking-chatting-readStatusChange'],
+            authCheck,
+            ...chatting.apiReadStatusChange,
         );
 
         // 채팅 시작 및 메세지 보내기

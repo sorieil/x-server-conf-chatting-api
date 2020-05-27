@@ -2,6 +2,7 @@ import { ChattingListsI } from './../../entity/mongodb/main/MongoChattingLists';
 import {
     MessageI,
     ChattingMessages,
+    ChattingMessagesI,
 } from './../../entity/mongodb/main/MongoChattingMessages';
 import {
     ChattingLists,
@@ -11,6 +12,7 @@ import {
 import { EventI } from '../../entity/mongodb/main/MongoEvent';
 import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
 import { firebaseAdmin } from '../../util/firebase';
+import { Schema } from 'mongoose';
 export default class ServiceChatting {
     constructor() {}
 
@@ -34,21 +36,108 @@ export default class ServiceChatting {
                 },
             },
             {
+                $lookup: {
+                    from: 'chattingmessages',
+                    let: { chatListId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $eq: [
+                                                '$chattingListId',
+                                                '$$chatListId',
+                                            ],
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'chattingMsgList',
+                },
+            },
+            {
+                $addFields: {
+                    lastMsgInfo: { $arrayElemAt: ['$chattingMsgList', -1] },
+                    notReadCount: 0,
+                },
+            },
+            {
                 $project: {
                     _id: 1,
                     lastText: 1,
+                    lastMsgInfo: 1,
                     status: 1,
                     updatedAt: 1,
-                    membersInformation: { _id: 1, profiles: 1, name: 1 },
+                    membersInformation: {
+                        _id: 1,
+                        profiles: 1,
+                        name: 1,
+                        unReadCount: 1,
+                    },
                 },
             },
             //     {
             //     eventId: event._id,
             //     members: { $in: [accounts._id] },
             // }
-        ]).exec();
+            //]).exec();
+        ]);
 
         return query;
+    }
+
+    public async getUnreadMessages(
+        chattingListId: Schema.Types.ObjectId,
+        accountId: Schema.Types.ObjectId,
+    ): Promise<ChattingMessagesI[]> {
+        return ChattingMessages.find({
+            $and: [
+                { chattingListId: chattingListId },
+                { 'readMembers.accountId': { $nin: [accountId] } },
+            ],
+        });
+    }
+
+    /**
+     * 채팅 리스트를 부를 때 읽지 않은 메세지를 카운트하여 number로 출력.
+     * @param chattingListId 채팅방 아이디 값
+     * @param accountId 조회 하고자 하는 회원의 아이디 값
+     */
+    public async getUnreadCount(
+        chattingListId: Schema.Types.ObjectId,
+        accountId: Schema.Types.ObjectId,
+    ): Promise<number> {
+        return ChattingMessages.find({
+            $and: [
+                { chattingListId: chattingListId },
+                { 'readMembers.accountId': { $nin: [accountId] } },
+            ],
+        }).countDocuments();
+    }
+
+    public async getTotalNotReadCount(
+        accountId: Schema.Types.ObjectId,
+        eventId: Schema.Types.ObjectId,
+    ): Promise<number> {
+        const chattingListIds = [];
+        const chattingList = await ChattingLists.find({
+            $and: [{ eventId: eventId }, { members: { $in: [accountId] } }],
+        });
+        for (let i = 0; i < chattingList.length; i++) {
+            chattingListIds.push({
+                chattingListId: chattingList[i]._id,
+            });
+        }
+        console.log('chattingListIds', chattingListIds);
+        return await ChattingMessages.find({
+            $and: [
+                { 'readMembers.accountId': { $nin: [accountId] } },
+                { $or: chattingListIds },
+            ],
+        }).countDocuments();
     }
 
     /**
@@ -109,7 +198,7 @@ export default class ServiceChatting {
 
         //     return { me, your, id: v._id };
         // });
-        const qc = await new Promise(resolve => {
+        const qc = await new Promise(async (resolve) => {
             const me = [];
             const your = [];
 
@@ -125,6 +214,33 @@ export default class ServiceChatting {
                         // 나와 내가 아닌 걸 분리
                         if (member._id.toString() === accounts._id.toString()) {
                             me.push(member);
+                            //채팅방에 진입시 이 api를 꼭 부른다고 함.
+                            //채팅방에 진입했을 경우 모든 메세지를 읽은 것으로 간주해야 함.
+                            //따라서 진입했을 때, readMembers Array에 내 accountId가 없다면
+                            //accountId를 readMembers에 집어넣어,
+                            //notReadCount에 메세지들이 포함되지 않도록 해야 함.
+                            const myUnreadMessageList = await this.getUnreadMessages(
+                                chattingLists._id,
+                                accounts._id,
+                            );
+                            console.log('unreadMessage:', myUnreadMessageList);
+                            for (
+                                let j = 0;
+                                j < myUnreadMessageList.length;
+                                j++
+                            ) {
+                                const currentDate = new Date();
+                                myUnreadMessageList[j].readMembers.push([
+                                    {
+                                        accountId: accounts._id,
+                                        readDate: currentDate,
+                                    },
+                                ]);
+                                // Interface 타입으로 되어있는 메세지를 Convert!
+                                const myUnreadMessage: ChattingMessagesI =
+                                    myUnreadMessageList[j];
+                                myUnreadMessage.save();
+                            }
                         } else {
                             your.push(member);
                         }
@@ -240,12 +356,19 @@ export default class ServiceChatting {
             const initChattingList = await saveChattingList.save();
 
             // 채팅내용 저장
+            const currentDate = new Date();
             const saveChattingMessage = new ChattingMessages();
             saveChattingMessage.accountId = accounts._id;
-            saveChattingMessage.createdAt = new Date();
+            saveChattingMessage.createdAt = currentDate;
             saveChattingMessage.messages = message;
             saveChattingMessage.fileupload = [];
             saveChattingMessage.chattingListId = initChattingList._id;
+            saveChattingMessage.readMembers = [
+                {
+                    accountId: accounts._id,
+                    readDate: currentDate,
+                },
+            ];
 
             const query = await saveChattingMessage.save();
 
@@ -315,11 +438,18 @@ export default class ServiceChatting {
 
         // 채팅내용 저장
         const saveChattingMessage = new ChattingMessages();
+        const currentDate = new Date();
         saveChattingMessage.accountId = accounts._id;
-        saveChattingMessage.createdAt = new Date();
+        saveChattingMessage.createdAt = currentDate;
         saveChattingMessage.messages = message;
         saveChattingMessage.fileupload = [];
         saveChattingMessage.chattingListId = chattingLists._id;
+        saveChattingMessage.readMembers = [
+            {
+                accountId: accounts._id,
+                readDate: currentDate,
+            },
+        ];
 
         const query = await saveChattingMessage.save();
         // console.log('chatting message id:', query);
