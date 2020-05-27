@@ -18,6 +18,6 @@ cd ~
 rm -rf server-conference-chatting-api
 mv $DIR server-conference-chatting-api
 cd server-conference-chatting-api
-pm2 start ecosystem.config.js --env=development
+pm2 start ecosystem.config.json
 echo "Success Start"
 echo "Successfully deploy"
