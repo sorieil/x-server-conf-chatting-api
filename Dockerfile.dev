@@ -2,7 +2,11 @@ FROM node:lts-alpine as production
 WORKDIR /usr/src/app
 ENV NODE_ENV=development
 ENV HOST=0.0.0.0
-ENV PORT=4000
+ENV PORT=4001
+RUN yarn global add pm2 typescript ts-node
+RUN yarn global add 
+RUN pm2 install typescript
 COPY package*.json ./
-RUN yarn
+RUN yarn --production=false --silent
 COPY . .
+CMD ["pm2-dev", "start", "ecosystem.config.dev.json"]

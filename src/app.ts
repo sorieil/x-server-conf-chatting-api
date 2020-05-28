@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import('./util/secrets');
+import './util/secrets';
 import { RouterV1 } from './util/routerEnum';
 import { responseJson, RequestRole } from './util/common';
 import bodyParser from 'body-parser';
