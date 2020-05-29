@@ -116,13 +116,17 @@ class ServiceChatting {
                     chattingListId: chattingList[i]._id,
                 });
             }
-            console.log('chattingListIds', chattingListIds);
-            return yield MongoChattingMessages_1.ChattingMessages.find({
-                $and: [
-                    { 'readMembers.accountId': { $nin: [accountId] } },
-                    { $or: chattingListIds },
-                ],
-            }).countDocuments();
+            if (chattingListIds.length > 0) {
+                return yield MongoChattingMessages_1.ChattingMessages.find({
+                    $and: [
+                        { 'readMembers.accountId': { $nin: [accountId] } },
+                        { $or: chattingListIds },
+                    ],
+                }).countDocuments();
+            }
+            else {
+                return 0;
+            }
         });
     }
     /**
