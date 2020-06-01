@@ -222,28 +222,50 @@ export default class ServiceChatting {
                             //따라서 진입했을 때, readMembers Array에 내 accountId가 없다면
                             //accountId를 readMembers에 집어넣어,
                             //notReadCount에 메세지들이 포함되지 않도록 해야 함.
-                            const myUnreadMessageList = await this.getUnreadMessages(
-                                chattingLists._id,
-                                accounts._id,
-                            );
-                            console.log('unreadMessage:', myUnreadMessageList);
-                            for (
-                                let j = 0;
-                                j < myUnreadMessageList.length;
-                                j++
-                            ) {
-                                const currentDate = new Date();
-                                myUnreadMessageList[j].readMembers.push([
-                                    {
-                                        accountId: accounts._id,
-                                        readDate: currentDate,
+
+                            const currentDate = new Date();
+
+                            ChattingMessages.updateMany(
+                                {
+                                    $and: [
+                                        { chattingListId: chattingLists._id },
+                                        {
+                                            'readMembers.accountId': {
+                                                $nin: [accounts._id],
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    $push: {
+                                        readMembers: {
+                                            accountId: accounts._id,
+                                            date: currentDate,
+                                        },
                                     },
-                                ]);
-                                // Interface 타입으로 되어있는 메세지를 Convert!
-                                const myUnreadMessage: ChattingMessagesI =
-                                    myUnreadMessageList[j];
-                                myUnreadMessage.save();
-                            }
+                                },
+                            );
+
+                            // const myUnreadMessageList = await this.getUnreadMessages(
+                            //     chattingLists._id,
+                            //     accounts._id,
+                            // );
+                            // console.log('unreadMessage:', myUnreadMessageList);
+                            // for (
+                            //     let j = 0;
+                            //     j < myUnreadMessageList.length;
+                            //     j++
+                            // ) {
+
+                            //     myUnreadMessageList[j].readMembers.push({
+                            //         accountId: accounts._id,
+                            //         readDate: currentDate,
+                            //     });
+                            //     // Interface 타입으로 되어있는 메세지를 Convert!
+                            //     const myUnreadMessage: ChattingMessagesI =
+                            //         myUnreadMessageList[j];
+                            //     myUnreadMessage.save();
+                            // }
                         } else {
                             your.push(member);
                         }
@@ -334,6 +356,7 @@ export default class ServiceChatting {
         */
 
         // 채팅을 처음 생성할때...
+        const currentDate = new Date();
         if (beforeChatting.length === 0) {
             // 타겟의 아이디로 정보를 조회해온다.
             const queryTargetAccounts: AccountsI = await Accounts.findById(
@@ -359,7 +382,7 @@ export default class ServiceChatting {
             const initChattingList = await saveChattingList.save();
 
             // 채팅내용 저장
-            const currentDate = new Date();
+
             const saveChattingMessage = new ChattingMessages();
             saveChattingMessage.accountId = accounts._id;
             saveChattingMessage.createdAt = currentDate;
@@ -402,7 +425,12 @@ export default class ServiceChatting {
             saveChattingMessage.messages = message;
             saveChattingMessage.fileupload = [];
             saveChattingMessage.chattingListId = beforeChatting[0]._id;
-
+            saveChattingMessage.readMembers = [
+                {
+                    accountId: accounts._id,
+                    readDate: currentDate,
+                },
+            ];
             const query = await saveChattingMessage.save();
             // console.log('chatting message id:', query);
             await firebaseAdmin
