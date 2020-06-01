@@ -23,67 +23,33 @@ export default class ServiceChatting {
         const query = await ChattingLists.aggregate([
             {
                 $match: {
-                    eventId: event._id,
-                    members: { $in: [accounts._id] },
-                },
-            },
-            {
-                $lookup: {
-                    from: 'accounts',
-                    localField: 'members',
-                    foreignField: '_id',
-                    as: 'membersInformation',
+                    $and: [{ members: accounts._id }, { eventId: event._id }],
                 },
             },
             {
                 $lookup: {
                     from: 'chattingmessages',
-                    let: { chatListId: '$_id' },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        {
-                                            $eq: [
-                                                '$chattingListId',
-                                                '$$chatListId',
-                                            ],
-                                        },
-                                    ],
-                                },
-                            },
-                        },
-                    ],
-                    as: 'chattingMsgList',
+                    foreignField: 'chattingListId',
+                    localField: '_id',
+                    as: 'chatMsgList',
                 },
             },
             {
                 $addFields: {
-                    lastMsgInfo: { $arrayElemAt: ['$chattingMsgList', -1] },
-                    notReadCount: 0,
-                },
-            },
-            {
-                $project: {
-                    _id: 1,
-                    lastText: 1,
-                    lastMsgInfo: 1,
-                    status: 1,
-                    updatedAt: 1,
-                    membersInformation: {
-                        _id: 1,
-                        profiles: 1,
-                        name: 1,
-                        unReadCount: 1,
+                    lastMsgInfo: { $arrayElemAt: ['$chatMsgList', -1] },
+                    notReadCount: {
+                        $size: {
+                            $filter: {
+                                input: '$chatMsgList',
+                                as: 'member',
+                                cond: {
+                                    $ne: ['$$member.accountId', accounts._id],
+                                },
+                            },
+                        },
                     },
                 },
             },
-            //     {
-            //     eventId: event._id,
-            //     members: { $in: [accounts._id] },
-            // }
-            //]).exec();
         ]);
 
         return query;
@@ -245,27 +211,6 @@ export default class ServiceChatting {
                                     },
                                 },
                             );
-
-                            // const myUnreadMessageList = await this.getUnreadMessages(
-                            //     chattingLists._id,
-                            //     accounts._id,
-                            // );
-                            // console.log('unreadMessage:', myUnreadMessageList);
-                            // for (
-                            //     let j = 0;
-                            //     j < myUnreadMessageList.length;
-                            //     j++
-                            // ) {
-
-                            //     myUnreadMessageList[j].readMembers.push({
-                            //         accountId: accounts._id,
-                            //         readDate: currentDate,
-                            //     });
-                            //     // Interface 타입으로 되어있는 메세지를 Convert!
-                            //     const myUnreadMessage: ChattingMessagesI =
-                            //         myUnreadMessageList[j];
-                            //     myUnreadMessage.save();
-                            // }
                         } else {
                             your.push(member);
                         }
