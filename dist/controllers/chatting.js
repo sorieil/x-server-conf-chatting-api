@@ -163,23 +163,23 @@ const apiPostStatusChange = [
                 accountId: user._id,
                 readDate: currentDate,
             };
-            yield MongoChattingMessages_1.ChattingMessages.updateMany({
+            const unReadMessageList = yield MongoChattingMessages_1.ChattingMessages.find({
                 $and: [
                     { 'readMembers.accountId': { $nin: [user._id] } },
                     { chattingListId: chattingList._id },
                 ],
-            }, { $set: { $push: { readMembers: newReadMembers } } });
+            });
             //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
-            // for (let i = 0; i < unReadMessageList.length; i++) {
-            //     unReadMsg = unReadMessageList[i];
-            //     unReadMsg.readMembers.push({
-            //         accountId: user._id,
-            //         readDate: currentDate,
-            //     });
-            // }
-            // if (unReadMsg != null) {
-            //     unReadMsg.save();
-            // }
+            for (let i = 0; i < unReadMessageList.length; i++) {
+                const unReadMsg = unReadMessageList[i];
+                let readMembersCopy = unReadMsg.readMembers;
+                readMembersCopy.push({
+                    accountid: user._id,
+                    readDate: currentDate,
+                });
+                unReadMsg.readMembers = readMembersCopy;
+                unReadMsg.save();
+            }
             const result = [];
             result.push({
                 data: [
