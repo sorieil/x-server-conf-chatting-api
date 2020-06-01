@@ -169,23 +169,25 @@ const apiPostStatusChange = [
                     readMembers: { accountId: user._id, date: currentDate },
                 },
             });
-            const unReadMessageList = yield MongoChattingMessages_1.ChattingMessages.find({
-                $and: [
-                    { 'readMembers.accountId': { $nin: [user._id] } },
-                    { chattingListId: chattingList._id },
-                ],
-            });
-            //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
-            for (let i = 0; i < unReadMessageList.length; i++) {
-                const unReadMsg = unReadMessageList[i];
-                let readMembersCopy = unReadMsg.readMembers;
-                readMembersCopy.push({
-                    accountid: user._id,
-                    readDate: currentDate,
-                });
-                unReadMsg.readMembers = readMembersCopy;
-                unReadMsg.save();
-            }
+            // const unReadMessageList: ChattingMessagesI[] = await ChattingMessages.find(
+            //     {
+            //         $and: [
+            //             { 'readMembers.accountId': { $nin: [user._id] } },
+            //             { chattingListId: chattingList._id },
+            //         ],
+            //     },
+            // );
+            // //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
+            // for (let i = 0; i < unReadMessageList.length; i++) {
+            //     const unReadMsg = unReadMessageList[i];
+            //     let readMembersCopy = unReadMsg.readMembers;
+            //     readMembersCopy.push({
+            //         accountid: user._id,
+            //         readDate: currentDate,
+            //     });
+            //     unReadMsg.readMembers = readMembersCopy;
+            //     unReadMsg.save();
+            // }
             const result = [];
             result.push({
                 data: [
