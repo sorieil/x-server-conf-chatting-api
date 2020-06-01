@@ -188,28 +188,31 @@ const apiPostStatusChange = [
 
             //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
             const serviceChatting = new ServiceChatting();
-            const unReadMessageList: ChattingMessagesI[] = await ChattingMessages.find(
+            const newReadMembers = {
+                accountId: user._id,
+                readDate: currentDate,
+            };
+            await ChattingMessages.updateMany(
                 {
                     $and: [
                         { 'readMembers.accountId': { $nin: [user._id] } },
                         { chattingListId: chattingList._id },
                     ],
                 },
+                { $set: { $push: { readMembers: newReadMembers } } },
             );
 
             //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
-            for (let i = 0; i < unReadMessageList.length; i++) {
-                const unReadMessage: ChattingMessagesI = unReadMessageList[i];
-
-                unReadMessage.readMembers.push({
-                    accountId: user._id,
-                    readDate: currentDate,
-                });
-                //4. 몽고DB에 저장
-                unReadMessage.save();
-            }
-
-            console.log('unReadMessageList:::', unReadMessageList);
+            // for (let i = 0; i < unReadMessageList.length; i++) {
+            //     unReadMsg = unReadMessageList[i];
+            //     unReadMsg.readMembers.push({
+            //         accountId: user._id,
+            //         readDate: currentDate,
+            //     });
+            // }
+            // if (unReadMsg != null) {
+            //     unReadMsg.save();
+            // }
 
             const result = [];
             result.push({
