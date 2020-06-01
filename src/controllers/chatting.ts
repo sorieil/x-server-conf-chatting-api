@@ -188,10 +188,21 @@ const apiPostStatusChange = [
 
             //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
             const serviceChatting = new ServiceChatting();
-            const newReadMembers = {
-                accountId: user._id,
-                readDate: currentDate,
-            };
+
+            await ChattingMessages.updateMany(
+                {
+                    $and: [
+                        { 'readMembers.accountId': { $nin: [user._id] } },
+                        { chattingListId: chattingList._id },
+                    ],
+                },
+                {
+                    $push: {
+                        readMembers: { accountId: user._id, date: currentDate },
+                    },
+                },
+            );
+
             const unReadMessageList: ChattingMessagesI[] = await ChattingMessages.find(
                 {
                     $and: [

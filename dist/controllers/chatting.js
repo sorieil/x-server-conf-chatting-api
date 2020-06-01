@@ -159,10 +159,16 @@ const apiPostStatusChange = [
             //1. 어떤 채팅방인지 알아야겠지? => chattingListId를 받는 것으로 해결.
             //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
             const serviceChatting = new ServiceChatting_1.default();
-            const newReadMembers = {
-                accountId: user._id,
-                readDate: currentDate,
-            };
+            yield MongoChattingMessages_1.ChattingMessages.updateMany({
+                $and: [
+                    { 'readMembers.accountId': { $nin: [user._id] } },
+                    { chattingListId: chattingList._id },
+                ],
+            }, {
+                $push: {
+                    readMembers: { accountId: user._id, date: currentDate },
+                },
+            });
             const unReadMessageList = yield MongoChattingMessages_1.ChattingMessages.find({
                 $and: [
                     { 'readMembers.accountId': { $nin: [user._id] } },
