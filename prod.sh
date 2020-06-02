@@ -8,7 +8,7 @@ if [ -d "$TEMP_DIR" ]; then
 fi
 eval `ssh-agent -s`
 ssh-add ~/.ssh/bitbucket_rsa
-git clone git@bitbucket.org:xsync_development/server-admin-api.git $TEMP_DIR
+git clone git@bitbucket.org:xsync_development/server-conference-chatting-api.git $TEMP_DIR
 echo "Clone success"
 cd $TEMP_DIR
 BRANCH=$(git rev-parse --abbrev-ref HEAD)

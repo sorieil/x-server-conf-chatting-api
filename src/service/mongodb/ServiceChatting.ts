@@ -34,14 +34,7 @@ export default class ServiceChatting {
                     as: 'membersInformation',
                 },
             },
-            {
-                $lookup: {
-                    from: 'chattingmessages',
-                    foreignField: 'chattingListId',
-                    localField: '_id',
-                    as: 'chatMsgList',
-                },
-            },
+
             {
                 $addFields: {
                     lastMsgInfo: { $arrayElemAt: ['$chatMsgList', -1] },
