@@ -6,12 +6,12 @@ pipelines:
                   name: Build & Deploy
                   deployment: test
                   script:
-                      - ssh centos@$(echo $DEPLOY_SERVER_IP) 'bash -s' < ./test.sh
+                      - ssh ubuntu@$(echo $DEPLOY_SERVER_IP) 'bash -s' < ./test.sh
                       - echo 'Deploy success!!!'
         prod:
             - step:
                   name: Build & Deploy
                   deployment: production
                   script:
-                      - ssh centos@$(echo $DEPLOY_SERVER_IP) 'bash -s' < ./prod.sh
+                      - ssh ubuntu@$(echo $DEPLOY_SERVER_IP) 'bash -s' < ./prod.sh
                       - echo 'Deploy success!!!'
