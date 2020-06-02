@@ -40,7 +40,6 @@ const apiGet = [
             }
             const serviceChatting = new ServiceChatting_1.default();
             const query = yield serviceChatting.getChattingListByIdEventId(accounts, event);
-            console.log(query);
             for (let i = 0; i < query.length; i++) {
                 const chattingListId = query[i]._id;
                 query[i].notReadCount = yield serviceChatting.getUnreadCount(chattingListId, accounts._id);

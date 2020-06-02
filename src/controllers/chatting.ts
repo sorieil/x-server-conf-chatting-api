@@ -44,8 +44,6 @@ const apiGet = [
                 event,
             );
 
-            console.log(query);
-
             for (let i = 0; i < query.length; i++) {
                 const chattingListId = query[i]._id;
                 query[i].notReadCount = await serviceChatting.getUnreadCount(

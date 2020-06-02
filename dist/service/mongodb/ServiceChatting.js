@@ -25,6 +25,14 @@ class ServiceChatting {
                 },
                 {
                     $lookup: {
+                        from: 'accounts',
+                        localField: 'members',
+                        foreignField: '_id',
+                        as: 'membersInformation',
+                    },
+                },
+                {
+                    $lookup: {
                         from: 'chattingmessages',
                         foreignField: 'chattingListId',
                         localField: '_id',
@@ -45,6 +53,22 @@ class ServiceChatting {
                                 },
                             },
                         },
+                    },
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        lastText: 1,
+                        lastMsgInfo: 1,
+                        status: 1,
+                        updatedAt: 1,
+                        membersInformation: {
+                            _id: 1,
+                            profiles: 1,
+                            name: 1,
+                            unReadCount: 1,
+                        },
+                        notReadCount: 1,
                     },
                 },
             ]);

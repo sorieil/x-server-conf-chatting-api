@@ -28,6 +28,14 @@ export default class ServiceChatting {
             },
             {
                 $lookup: {
+                    from: 'accounts',
+                    localField: 'members',
+                    foreignField: '_id',
+                    as: 'membersInformation',
+                },
+            },
+            {
+                $lookup: {
                     from: 'chattingmessages',
                     foreignField: 'chattingListId',
                     localField: '_id',
@@ -48,6 +56,22 @@ export default class ServiceChatting {
                             },
                         },
                     },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    lastText: 1,
+                    lastMsgInfo: 1,
+                    status: 1,
+                    updatedAt: 1,
+                    membersInformation: {
+                        _id: 1,
+                        profiles: 1,
+                        name: 1,
+                        unReadCount: 1,
+                    },
+                    notReadCount: 1,
                 },
             },
         ]);
@@ -188,9 +212,7 @@ export default class ServiceChatting {
                             //따라서 진입했을 때, readMembers Array에 내 accountId가 없다면
                             //accountId를 readMembers에 집어넣어,
                             //notReadCount에 메세지들이 포함되지 않도록 해야 함.
-
                             const currentDate = new Date();
-
                             ChattingMessages.updateMany(
                                 {
                                     $and: [
