@@ -1,7 +1,7 @@
 {
     "apps": [
         {
-            "name": "Conference User Chatting Api Live",
+            "name": "Conference User Chatting Api Production",
             "autorestart": true,
             "script": "./dist/app.js",
             "exec_mode": "cluster",
