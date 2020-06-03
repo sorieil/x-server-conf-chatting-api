@@ -2,8 +2,7 @@
     "apps": [
         {
             "name": "Conference Chatting Api Test",
-            "script": "./src/app.ts",
-            "interpreter": "ts-node",
+            "script": "./dist/app.js",
             "instances": 1,
             "watch": true,
             "watch_delay": 1000,
