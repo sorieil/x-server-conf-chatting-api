@@ -3,7 +3,6 @@
         {
             "name": "Conference Chatting Api Test",
             "script": "./dist/app.js",
-            "interpreter": "ts-node",
             "instances": 1,
             "watch": true,
             "watch_delay": 1000,
