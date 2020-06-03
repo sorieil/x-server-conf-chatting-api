@@ -7,7 +7,8 @@
     "license": "MIT",
     "private": true,
     "scripts": {
-        "dev": "pm2-dev start ecosystem.config.dev.json",
+        "dev": "pm2-dev start ecosystem.config.dev.json --env development",
+        "start": "pm2 start ecosystem.config.json --env production",
         "stop": "pm2 stop all",
         "lint": "tsc --noEmit && eslint '*/**/*.{ts,tsx}' --quiet --fix"
     },
