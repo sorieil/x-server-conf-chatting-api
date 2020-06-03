@@ -10,7 +10,7 @@
             "env": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
-                "PORT": 4001,
+                "PORT": 4003,
                 "MONGO_USERNAME": "xsync-dev",
                 "MONGO_PASSWORD": "GDxdAeiE6Xpe889u",
                 "MONGO_DATABASE": "xsync-main",
