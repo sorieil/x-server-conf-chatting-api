@@ -156,7 +156,9 @@ const apiPostStatusChange = [
             const currentDate = new Date();
             accounts._id = user._id;
             //1. 어떤 채팅방인지 알아야겠지? => chattingListId를 받는 것으로 해결.
-            //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 가져와야겠지?
+            //2. 그 채팅방에서 내가 읽지 않은 채팅 리스트를 조회(find $and)하여 한번에 변경($push)!
+            //서비스쪽으로 빼고, $and에 날짜 넣기
+            //읽기, 입력은 부하가 많이 걸리지는 않지만 풀스캐닝은 자제.
             const serviceChatting = new ServiceChatting_1.default();
             yield MongoChattingMessages_1.ChattingMessages.updateMany({
                 $and: [
@@ -168,25 +170,6 @@ const apiPostStatusChange = [
                     readMembers: { accountId: user._id, date: currentDate },
                 },
             });
-            // const unReadMessageList: ChattingMessagesI[] = await ChattingMessages.find(
-            //     {
-            //         $and: [
-            //             { 'readMembers.accountId': { $nin: [user._id] } },
-            //             { chattingListId: chattingList._id },
-            //         ],
-            //     },
-            // );
-            // //3. 2에서 가져온 리스트에 읽음을 추가해야겠지?
-            // for (let i = 0; i < unReadMessageList.length; i++) {
-            //     const unReadMsg = unReadMessageList[i];
-            //     let readMembersCopy = unReadMsg.readMembers;
-            //     readMembersCopy.push({
-            //         accountid: user._id,
-            //         readDate: currentDate,
-            //     });
-            //     unReadMsg.readMembers = readMembersCopy;
-            //     unReadMsg.save();
-            // }
             const result = [];
             result.push({
                 data: [

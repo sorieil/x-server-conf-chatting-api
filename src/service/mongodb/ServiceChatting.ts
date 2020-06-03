@@ -34,7 +34,14 @@ export default class ServiceChatting {
                     as: 'membersInformation',
                 },
             },
-
+            {
+                $lookup: {
+                    from: 'chattingmessages',
+                    foreignField: 'chattingListId',
+                    localField: '_id',
+                    as: 'chatMsgList',
+                },
+            },
             {
                 $addFields: {
                     lastMsgInfo: { $arrayElemAt: ['$chatMsgList', -1] },
@@ -184,7 +191,7 @@ export default class ServiceChatting {
 
         //     return { me, your, id: v._id };
         // });
-        const qc = await new Promise(async (resolve) => {
+        const qc = await new Promise(async resolve => {
             const me = [];
             const your = [];
 
