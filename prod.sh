@@ -17,7 +17,7 @@ if [[ "$BRANCH" != "prod" ]]; then
 fi
 echo "Success git pull"
 yarn --production=false --silent
-echo "Success node_moduels"
+echo "Success node_modules"
 #npx tsc You have to complie at this point, but I'm temporarily compiling locally for server performonce issues.
 echo "Success Build"
 cd ~

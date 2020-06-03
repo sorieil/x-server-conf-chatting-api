@@ -8,7 +8,7 @@ if [ -d "$TEMP_DIR" ]; then
 fi
 eval `ssh-agent -s`
 ssh-add ~/.ssh/bitbucket_rsa
-git clone git@bitbucket.org:xsync_development/server-conference-chatting-api.git $TEMP_DIR $TEMP_DIR
+git clone git@bitbucket.org:xsync_development/server-conference-chatting-api.git $TEMP_DIR
 echo "Clone success"
 cd $TEMP_DIR
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -17,7 +17,7 @@ if [[ "$BRANCH" != "test" ]]; then
 fi
 echo "Success git pull"
 yarn --production=false --silent
-echo "Success node_moduels"
+echo "Success node_modules"
 #npx tsc You have to complie at this point, but I'm temporarily compiling locally for server performonce issues.
 echo "Success Build"
 cd ~
@@ -26,5 +26,5 @@ mv $TEMP_DIR $DIR
 cd $DIR
 rm -rf ./src
 yarn run dev
-echo "Success Start"
+echo "Success dev Start"
 echo "Successfully deploy"
