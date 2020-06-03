@@ -5,7 +5,7 @@
             "script": "./dist/app.js",
             "instances": 0,
             "exec_mode": "cluster",
-            "env_development": {
+            "env": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
                 "PORT": 4003,
@@ -13,7 +13,7 @@
                 "MONGO_PASSWORD": "GDxdAeiE6Xpe889u",
                 "MONGO_DATABASE": "xsync-main",
                 "MONGO_NON_ROOT_ROLE": "root",
-                "MONGO_HOST": "xsync-mongodb-n1tic.mongodb.net",
+                "MONGO_HOST": "xsync-mongodb-v1-n1tic.mongodb.net",
                 "MYSQL_ROOT_PASSWORD": "mKatMYWCqTZfYNvHtgmw",
                 "MYSQL_DATABASE": "main",
                 "MYSQL_USER": "xsync_user_dev",
