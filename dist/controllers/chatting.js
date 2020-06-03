@@ -222,7 +222,8 @@ const apiGetCheckChatHistory = [
                 return;
             }
             const service = new ServiceChatting_1.default();
-            const query = yield service.checkInitChattingHistory(accounts, targetAccounts);
+            console.log('userEventId', user.eventId);
+            const query = yield service.checkInitChattingHistory(accounts, targetAccounts, user.eventId);
             common_1.responseJson(res, query, method, 'success');
         }
         catch (error) {

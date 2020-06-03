@@ -1,23 +1,30 @@
 #!/bin/bash
 set -e
-DIR="server-conference-chatting-api-new"
-if [ -d "$DIR" ]; then
-    rm -rf $DIR
-    echo "Delete " + $DIR
+TEMP_DIR="conference-user-api-new"
+DIR="conference-user-api"
+if [ -d "$TEMP_DIR" ]; then
+    rm -rf $TEMP_DIR
+    echo "Delete " + $TEMP_DIR
 fi
-git clone https://xsyncdev@bitbucket.org/xsync_development/server-conference-chatting-api.git $DIR
+eval `ssh-agent -s`
+ssh-add ~/.ssh/bitbucket_rsa
+git clone git@bitbucket.org:xsync_development/server-conference-chatting-api.git $TEMP_DIR $TEMP_DIR
 echo "Clone success"
-cd $DIR
-git checkout -t origin/test
+cd $TEMP_DIR
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$BRANCH" != "test" ]]; then
+  git checkout -t origin/test
+fi
 echo "Success git pull"
-yarn
-echo "Success install node_moduels"
-# tsc
+yarn --production=false --silent
+echo "Success node_modules"
+#npx tsc You have to complie at this point, but I'm temporarily compiling locally for server performonce issues.
 echo "Success Build"
 cd ~
-rm -rf server-conference-chatting-api
-mv $DIR server-conference-chatting-api
-cd server-conference-chatting-api
-pm2 start ecosystem.config.json
+rm -rf $DIR
+mv $TEMP_DIR $DIR
+cd $DIR
+rm -rf ./src
+yarn run dev
 echo "Success Start"
 echo "Successfully deploy"

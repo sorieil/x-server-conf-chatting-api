@@ -231,13 +231,18 @@ class ServiceChatting {
         });
     }
     // 대화가 처음인지 아닌지 체크
-    checkInitChattingHistory(accounts, targetAccounts) {
+    checkInitChattingHistory(accounts, targetAccounts, eventId) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(accounts, targetAccounts);
             const query = MongoChattingLists_1.ChattingLists.find({
-                members: {
-                    $all: [accounts._id, targetAccounts._id],
-                },
+                $and: [
+                    {
+                        members: {
+                            $all: [accounts._id, targetAccounts._id],
+                        },
+                    },
+                    { eventId: eventId },
+                ],
             })
                 .populate('members')
                 .populate('membersInformation')
@@ -279,7 +284,7 @@ class ServiceChatting {
     postSendMessage(accounts, targetAccounts, event, message) {
         return __awaiter(this, void 0, void 0, function* () {
             // 기존 채팅 내역이 있는지 체크 한다.
-            const beforeChatting = yield this.checkInitChattingHistory(accounts, targetAccounts);
+            const beforeChatting = yield this.checkInitChattingHistory(accounts, targetAccounts, event._id);
             /*
             1. 혹시 모를 데이터 무결성을 위해서 대화맴버 기준으로
                채팅을 조회 한다.

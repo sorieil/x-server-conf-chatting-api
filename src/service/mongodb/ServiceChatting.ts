@@ -252,12 +252,18 @@ export default class ServiceChatting {
     public async checkInitChattingHistory(
         accounts: AccountsI,
         targetAccounts: AccountsI,
+        eventId: Schema.Types.ObjectId,
     ) {
         console.log(accounts, targetAccounts);
         const query = ChattingLists.find({
-            members: {
-                $all: [accounts._id, targetAccounts._id],
-            },
+            $and: [
+                {
+                    members: {
+                        $all: [accounts._id, targetAccounts._id],
+                    },
+                },
+                { eventId: eventId },
+            ],
         })
             .populate('members')
             .populate('membersInformation')
@@ -307,6 +313,7 @@ export default class ServiceChatting {
         const beforeChatting: ChattingListsI[] = await this.checkInitChattingHistory(
             accounts,
             targetAccounts,
+            event._id,
         );
 
         /*

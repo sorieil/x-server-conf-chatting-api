@@ -260,9 +260,11 @@ const apiGetCheckChatHistory = [
             }
 
             const service = new ServiceChatting();
+            console.log('userEventId', user.eventId);
             const query = await service.checkInitChattingHistory(
                 accounts,
                 targetAccounts,
+                user.eventId,
             );
 
             responseJson(res, query, method, 'success');
