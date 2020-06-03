@@ -5,7 +5,7 @@
             "script": "./dist/app.js",
             "instances": 0,
             "exec_mode": "cluster",
-            "env": {
+            "env_development": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
                 "PORT": 4003,
