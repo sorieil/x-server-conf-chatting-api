@@ -3,10 +3,8 @@
         {
             "name": "Conference Chatting Api Test",
             "script": "./dist/app.js",
-            "instances": 1,
+            "instances": 0,
             "exec_mode": "cluster",
-            "watch": true,
-            "watch_delay": 1000,
             "env": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
