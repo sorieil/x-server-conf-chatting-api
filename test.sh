@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-TEMP_DIR="conference-user-api-new"
-DIR="conference-user-api"
+TEMP_DIR="conference-user-chatting-api-new"
+DIR="conference-user-chatting-api"
 if [ -d "$TEMP_DIR" ]; then
     rm -rf $TEMP_DIR
     echo "Delete " + $TEMP_DIR
@@ -25,6 +25,6 @@ rm -rf $DIR
 mv $TEMP_DIR $DIR
 cd $DIR
 rm -rf ./src
-yarn run dev
+pm2 start ecosystem.config.dev.json --name "Conference User Chatting Api Test" --env development
 echo "Success dev Start"
 echo "Successfully deploy"
