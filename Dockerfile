@@ -16,5 +16,5 @@ RUN tsc
 RUN rm -rf ./src
 RUN rm typings.d.ts tsconfig.json
 RUN yarn global remove typescript
-CMD ["pm2-docker", "start", "ecosystem.config.json"]
+CMD ["pm2-docker", "start", "ecosystem.config.json", "--env", "production"]
 

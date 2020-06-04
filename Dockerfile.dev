@@ -9,4 +9,4 @@ RUN pm2 install typescript
 COPY package*.json ./
 RUN yarn --production=false --silent
 COPY . .
-CMD ["pm2-dev", "start", "ecosystem.config.dev.json"]
+CMD ["pm2-dev", "start", "ecosystem.config.dev.json", "--env", "development"]
