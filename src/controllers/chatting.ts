@@ -60,7 +60,7 @@ const apiGet = [
                 // }
             }
 
-            const convertQuery: any[] = await new Promise((resolve) => {
+            const convertQuery: any[] = await new Promise(resolve => {
                 for (let i = 0; i < query.length; i++) {
                     const row = query[i];
                     for (let m = 0; m < row.membersInformation.length; m++) {
@@ -169,7 +169,11 @@ const apiGetDetail = [
 ];
 
 const apiPostStatusChange = [
-    [param('chattingListId').not().isEmpty()],
+    [
+        param('chattingListId')
+            .not()
+            .isEmpty(),
+    ],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;
@@ -223,7 +227,11 @@ const apiPostStatusChange = [
  * 선택한 회원과 채팅 이 존재 하는지 체크 한다.
  */
 const apiGetCheckChatHistory = [
-    [param('targetAccountId').not().isEmpty()],
+    [
+        param('targetAccountId')
+            .not()
+            .isEmpty(),
+    ],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;
@@ -264,7 +272,10 @@ const apiGetCheckChatHistory = [
 const apiPost = [
     [
         checkTargetAccountIdAndEventIdExist.apply(this),
-        body('message').not().isEmpty().isString(),
+        body('message')
+            .not()
+            .isEmpty()
+            .isString(),
     ],
     async (req: Request, res: Response) => {
         try {
@@ -307,7 +318,12 @@ const apiPost = [
  * 메세지만 전달
  */
 const apiPostMessage = [
-    [body('message').not().isEmpty().isString()],
+    [
+        body('message')
+            .not()
+            .isEmpty()
+            .isString(),
+    ],
     async (req: Request, res: Response) => {
         try {
             const method: RequestRole = req.method.toString() as any;

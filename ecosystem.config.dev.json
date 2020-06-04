@@ -1,14 +1,16 @@
 {
     "apps": [
         {
-            "name": "Conference Chatting Api Test",
-            "script": "./dist/app.js",
+            "name": "Conference User Chatting Api Test",
+            "script": "./src/app.ts",
+            "interpreter": "ts-node",
             "instances": 0,
-            "exec_mode": "cluster",
-            "env_development": {
+            "watch": true,
+            "watch_delay": 1000,
+            "env": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
-                "PORT": 4003,
+                "PORT": 4001,
                 "MONGO_USERNAME": "xsync-dev",
                 "MONGO_PASSWORD": "GDxdAeiE6Xpe889u",
                 "MONGO_DATABASE": "xsync-main",
