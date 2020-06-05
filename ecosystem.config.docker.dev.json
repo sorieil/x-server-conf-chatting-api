@@ -24,30 +24,6 @@
                 "MYSQL_PORT": 3306,
                 "SESSION_SECRET": "alskdjfiiifja#dkf912359*$"
             }
-        },
-        {
-            "name": "Conference User Chatting Api Test",
-            "autorestart": true,
-            "script": "./dist/app.js",
-            "exec_mode": "cluster",
-            "instances": 0,
-            "env": {
-                "NODE_ENV": "development",
-                "HOST": "0.0.0.0",
-                "PORT": 4001,
-                "MONGO_USERNAME": "xsync-dev",
-                "MONGO_PASSWORD": "GDxdAeiE6Xpe889u",
-                "MONGO_DATABASE": "xsync-main",
-                "MONGO_NON_ROOT_ROLE": "root",
-                "MONGO_HOST": "xsync-mongodb-n1tic.mongodb.net",
-                "MYSQL_ROOT_PASSWORD": "mKatMYWCqTZfYNvHtgmw",
-                "MYSQL_DATABASE": "main",
-                "MYSQL_USER": "xsync_user_dev",
-                "MYSQL_PASSWORD": "mKatMYWCqTZfYNvHtgmw",
-                "MYSQL_HOST": "dev-xsync-all-db.cluster-cfucr7qnmfpn.ap-northeast-2.rds.amazonaws.com",
-                "MYSQL_PORT": 3306,
-                "SESSION_SECRET": "alskdjfiiifja#dkf912359*$"
-            }
         }
     ]
 }
