@@ -25,6 +25,6 @@ rm -rf $DIR
 mv $TEMP_DIR $DIR
 cd $DIR
 rm -rf ./src
-pm2 start ecosystem.config.dev.json --name "Conference User Chatting Api Test" --env development
+pm2 start ecosystem.config.dev.json --name "Conference User Chatting Api Test"
 echo "Success dev Start"
 echo "Successfully deploy"
