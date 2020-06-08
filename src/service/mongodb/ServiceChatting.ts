@@ -357,7 +357,7 @@ export default class ServiceChatting {
             saveChattingList.updatedAt = new Date();
             saveChattingList.members = [accounts._id, targetAccounts._id];
             saveChattingList.membersInformation = memberBucket;
-            saveChattingList.eventId = event._id;
+            saveChattingList.eventId = [event._id];
             saveChattingList.status = true;
             const initChattingList = await saveChattingList.save();
 
@@ -396,6 +396,7 @@ export default class ServiceChatting {
             await ChattingLists.findByIdAndUpdate(beforeChatting[0]._id, {
                 lastText: message,
                 updatedAt: new Date(),
+                $push: { eventId: event._id },
             });
 
             // 채팅내용 저장

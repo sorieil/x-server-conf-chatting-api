@@ -320,7 +320,7 @@ class ServiceChatting {
                 saveChattingList.updatedAt = new Date();
                 saveChattingList.members = [accounts._id, targetAccounts._id];
                 saveChattingList.membersInformation = memberBucket;
-                saveChattingList.eventId = event._id;
+                saveChattingList.eventId = [event._id];
                 saveChattingList.status = true;
                 const initChattingList = yield saveChattingList.save();
                 // 채팅내용 저장
@@ -355,6 +355,7 @@ class ServiceChatting {
                 yield MongoChattingLists_1.ChattingLists.findByIdAndUpdate(beforeChatting[0]._id, {
                     lastText: message,
                     updatedAt: new Date(),
+                    $push: { eventId: event._id },
                 });
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
