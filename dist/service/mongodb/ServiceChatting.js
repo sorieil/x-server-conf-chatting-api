@@ -22,7 +22,6 @@ class ServiceChatting {
                     $match: {
                         $and: [
                             { members: accounts._id },
-                            { eventId: { $in: [event._id] } },
                         ],
                     },
                 },
