@@ -247,7 +247,6 @@ class ServiceChatting {
                             $all: [accounts._id, targetAccounts._id],
                         },
                     },
-                    { eventId: { $in: [eventId] } },
                 ],
             })
                 .populate('members')
