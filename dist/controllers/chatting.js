@@ -51,7 +51,7 @@ const apiGet = [
                 //     );
                 // }
             }
-            const convertQuery = yield new Promise((resolve) => {
+            const convertQuery = yield new Promise(resolve => {
                 for (let i = 0; i < query.length; i++) {
                     const row = query[i];
                     for (let m = 0; m < row.membersInformation.length; m++) {
@@ -143,7 +143,11 @@ const apiGetDetail = [
     }),
 ];
 const apiPostStatusChange = [
-    [express_validator_1.param('chattingListId').not().isEmpty()],
+    [
+        express_validator_1.param('chattingListId')
+            .not()
+            .isEmpty(),
+    ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const method = req.method.toString();
@@ -189,7 +193,11 @@ const apiPostStatusChange = [
  * 선택한 회원과 채팅 이 존재 하는지 체크 한다.
  */
 const apiGetCheckChatHistory = [
-    [express_validator_1.param('targetAccountId').not().isEmpty()],
+    [
+        express_validator_1.param('targetAccountId')
+            .not()
+            .isEmpty(),
+    ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const method = req.method.toString();
@@ -223,7 +231,10 @@ const apiGetCheckChatHistory = [
 const apiPost = [
     [
         validationCheck_2.checkTargetAccountIdAndEventIdExist.apply(this),
-        express_validator_1.body('message').not().isEmpty().isString(),
+        express_validator_1.body('message')
+            .not()
+            .isEmpty()
+            .isString(),
     ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -256,7 +267,12 @@ const apiPost = [
  * 메세지만 전달
  */
 const apiPostMessage = [
-    [express_validator_1.body('message').not().isEmpty().isString()],
+    [
+        express_validator_1.body('message')
+            .not()
+            .isEmpty()
+            .isString(),
+    ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const method = req.method.toString();

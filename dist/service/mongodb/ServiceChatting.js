@@ -20,7 +20,10 @@ class ServiceChatting {
             const query = yield MongoChattingLists_1.ChattingLists.aggregate([
                 {
                     $match: {
-                        $and: [{ members: accounts._id }, { eventId: event._id }],
+                        $and: [
+                            { members: accounts._id },
+                            { eventId: { $in: [event._id] } },
+                        ],
                     },
                 },
                 {
@@ -104,7 +107,10 @@ class ServiceChatting {
         return __awaiter(this, void 0, void 0, function* () {
             const chattingListIds = [];
             const chattingList = yield MongoChattingLists_1.ChattingLists.find({
-                $and: [{ eventId: eventId }, { members: { $in: [accountId] } }],
+                $and: [
+                    { eventId: { $in: [eventId] } },
+                    { members: { $in: [accountId] } },
+                ],
             });
             for (let i = 0; i < chattingList.length; i++) {
                 chattingListIds.push({
@@ -241,7 +247,7 @@ class ServiceChatting {
                             $all: [accounts._id, targetAccounts._id],
                         },
                     },
-                    { eventId: eventId },
+                    { eventId: { $in: [eventId] } },
                 ],
             })
                 .populate('members')

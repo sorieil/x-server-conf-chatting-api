@@ -41,7 +41,7 @@ export interface ChattingListsI extends Document {
     membersInformation: MembersI[];
     status: boolean;
     chattingMessageId: Schema.Types.ObjectId;
-    eventId: Schema.Types.ObjectId;
+    eventId: [Schema.Types.ObjectId];
     lastMsgInfo: LastMsgInfoI;
     notReadCount: number;
 }
@@ -62,7 +62,7 @@ export const ChattingListsSchema: Schema = new Schema({
     membersInformation: { type: [MemberSchema] },
     status: { type: Boolean },
     chattingMessageId: { type: Schema.Types.ObjectId },
-    eventId: { type: Schema.Types.ObjectId },
+    eventId: { type: [Schema.Types.ObjectId] },
     notReadCount: { type: Number },
 });
 

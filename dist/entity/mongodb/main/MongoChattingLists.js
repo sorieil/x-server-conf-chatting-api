@@ -14,7 +14,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -46,7 +46,7 @@ exports.ChattingListsSchema = new mongoose_1.Schema({
     membersInformation: { type: [exports.MemberSchema] },
     status: { type: Boolean },
     chattingMessageId: { type: mongoose_1.Schema.Types.ObjectId },
-    eventId: { type: mongoose_1.Schema.Types.ObjectId },
+    eventId: { type: [mongoose_1.Schema.Types.ObjectId] },
     notReadCount: { type: Number },
 });
 exports.ChattingLists = mongoose_1.default.model('chattingLists', exports.ChattingListsSchema);

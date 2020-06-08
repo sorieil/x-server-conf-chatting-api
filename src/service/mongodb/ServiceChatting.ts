@@ -23,7 +23,10 @@ export default class ServiceChatting {
         const query = await ChattingLists.aggregate([
             {
                 $match: {
-                    $and: [{ members: accounts._id }, { eventId: event._id }],
+                    $and: [
+                        { members: accounts._id },
+                        { eventId: { $in: [event._id] } },
+                    ],
                 },
             },
             {
@@ -114,7 +117,10 @@ export default class ServiceChatting {
     ): Promise<number> {
         const chattingListIds = [];
         const chattingList = await ChattingLists.find({
-            $and: [{ eventId: eventId }, { members: { $in: [accountId] } }],
+            $and: [
+                { eventId: { $in: [eventId] } },
+                { members: { $in: [accountId] } },
+            ],
         });
         for (let i = 0; i < chattingList.length; i++) {
             chattingListIds.push({
@@ -262,7 +268,7 @@ export default class ServiceChatting {
                         $all: [accounts._id, targetAccounts._id],
                     },
                 },
-                { eventId: eventId },
+                { eventId: { $in: [eventId] } },
             ],
         })
             .populate('members')
