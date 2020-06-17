@@ -426,11 +426,7 @@ export default class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-            await this.sendPushMessage(
-                [targetAccounts._id],
-                event._id,
-                event.name,
-            );
+            this.sendPushMessage([targetAccounts._id], event._id, event.name);
             return query;
         }
     }
@@ -492,7 +488,7 @@ export default class ServiceChatting {
         //targetAccountId: [Schema.Types.ObjectId],
         //eventId: Schema.Types.ObjectId,
         //eventName: string,
-        await this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
+        this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
         return query;
     }
 

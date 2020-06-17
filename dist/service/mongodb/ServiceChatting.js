@@ -381,7 +381,7 @@ class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-                yield this.sendPushMessage([targetAccounts._id], event._id, event.name);
+                this.sendPushMessage([targetAccounts._id], event._id, event.name);
                 return query;
             }
         });
@@ -434,7 +434,7 @@ class ServiceChatting {
             //targetAccountId: [Schema.Types.ObjectId],
             //eventId: Schema.Types.ObjectId,
             //eventName: string,
-            yield this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
+            this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
             return query;
         });
     }
