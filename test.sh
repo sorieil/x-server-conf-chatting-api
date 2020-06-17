@@ -2,6 +2,7 @@
 set -e
 TEMP_DIR="conference-user-chatting-api-new"
 DIR="conference-user-chatting-api"
+APPNAMESPACE="conference-user-chatting-api.xsync.info"
 if [ -d "$TEMP_DIR" ]; then
     rm -rf $TEMP_DIR
     echo "Delete " + $TEMP_DIR
@@ -18,13 +19,11 @@ fi
 echo "Success git pull"
 yarn --production=false --silent
 echo "Success node_modules"
-#npx tsc You have to complie at this point, but I'm temporarily compiling locally for server performonce issues.
-echo "Success Build"
 cd ~
 rm -rf $DIR
 mv $TEMP_DIR $DIR
 cd $DIR
-rm -rf ./src
-pm2 start ecosystem.config.dev.json --name "Conference User Chatting Api Test"
-echo "Success dev Start"
+pm2 delete -s $APPNAMESPACE || : 
+pm2 start ecosystem.config.dev.json
+echo "Success Start"
 echo "Successfully deploy"

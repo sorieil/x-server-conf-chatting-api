@@ -1,12 +1,12 @@
 {
     "apps": [
         {
-            "name": "Conference User Chatting Api Test",
+            "name": "Conference User Chatting Api Local",
             "autorestart": true,
             "script": "./src/app.ts",
             "interpreter": "ts-node",
             "exec_mode": "cluster",
-            "instances": 0,
+            "instances": 1,
             "env": {
                 "NODE_ENV": "development",
                 "HOST": "0.0.0.0",
