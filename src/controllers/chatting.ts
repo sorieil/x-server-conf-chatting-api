@@ -1,3 +1,4 @@
+import { firebaseAdmin } from './../util/firebase';
 import { checkJoinedChattingMember } from './../util/validationCheck';
 import {
     ChattingLists,
@@ -9,7 +10,7 @@ import {
     MessageI,
     ChattingMessagesI,
 } from './../entity/mongodb/main/MongoChattingMessages';
-import { Accounts } from './../entity/mongodb/main/MongoAccounts';
+import { Accounts, AccountsI } from './../entity/mongodb/main/MongoAccounts';
 import { Event } from '../entity/mongodb/main/MongoEvent';
 
 import { Request, Response } from 'express';
@@ -17,7 +18,8 @@ import { responseJson, RequestRole, tryCatch } from '../util/common';
 import { validationResult, check, param, query, body } from 'express-validator';
 import { checkTargetAccountIdAndEventIdExist } from '../util/validationCheck';
 import ServiceChatting from '../service/mongodb/ServiceChatting';
-import { resolve } from 'bluebird';
+import { resolve, method } from 'bluebird';
+import mongodb from 'mongodb';
 
 /**
  * 채팅 목록을 가져온다.
@@ -266,7 +268,6 @@ const apiGetCheckChatHistory = [
 /**
  * 채팅을 보낸다.
  * 채팅을 보낼때는 서버를 통해서 보낸다.
- * TODO 조건: 유저의 마지먹 접속 디바이스를 조회 하고, 5분이 이상 api 통신 이력이 없는 경우, 모바일로 푸쉬를 보내준다.
  * 그리고 매번 메세지를 보낼때마다 접속 위치를 기록한다.
  */
 const apiPost = [
@@ -307,6 +308,9 @@ const apiPost = [
                 event,
                 message,
             );
+
+            //발신자 이외의 사람들에게 푸시를 전송한다.
+
             responseJson(res, [query], method, 'success');
         } catch (error) {
             tryCatch(res, error);
@@ -368,8 +372,75 @@ const apiPostMessage = [
     },
 ];
 
+const apiGetPush = [
+    async (req: Request, res: Response) => {
+        const serviceChatting = new ServiceChatting();
+        const ObjectID = mongodb.ObjectID;
+        const accountId: mongodb.ObjectID = new ObjectID(
+            '5e55d779ad876d6a8819651e',
+        );
+        const eventId: mongodb.ObjectID = new ObjectID(
+            '5e3bdc43ef9008503fcc123e',
+        );
+        const array = [];
+        array.push({ _id: accountId });
+        const accountList = await Accounts.find(
+            {
+                $and: [{ $or: array }, { 'eventList.eventId': eventId }],
+            },
+            {
+                _id: 1,
+                eventList: { $elemMatch: { eventId: eventId } },
+            },
+        );
+        const pushTokenArray: string[] = [];
+        // accountList.forEach(account => {
+        //     pushTokenArray.push(account.eventList[0].pushToken);
+        // });
+        pushTokenArray.push(
+            'e01n1bxhEao:APA91bGFiDUWjI048aBTyOjXvdrv3dhUxiQJ6Sf3obMGWIGYopTLho7glMmyTwgR8afnBXPVNr-QzZSiqWNQBV6XFZYTLNr-SUSXWYX_0wnqmtN77qz-Dyvhm2AU-nZe_Hvb0-yD4f7e',
+        );
+        console.log('pushTokenArray:::', pushTokenArray);
+        let titleMsg = '채팅테스트';
+        let contentMsg = '새 채팅 메시지가 도착했습니다!';
+        let message = {
+            notification: {
+                title: titleMsg,
+                body: contentMsg,
+            },
+            data: {
+                eventId: eventId.toHexString(),
+                featureType: 'alarmBox',
+            },
+            android: {
+                ttl: 3600,
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        badge: 1,
+                    },
+                },
+            },
+            tokens: pushTokenArray,
+        };
+        firebaseAdmin
+            .messaging()
+            .sendMulticast(message)
+            .then(response => {
+                console.log('response:::', response.responses[0].error);
+                //responseJson(res, ['success!!'], null, 'success');
+            })
+            .catch(err => {
+                console.log('error:::', err);
+            });
+        //console.log('pushTokenArray:::', pushTokenArray);
+    },
+];
+
 export default {
     apiGet,
+    apiGetPush,
     apiPost,
     apiPostMessage,
     apiReadStatusChange: apiPostStatusChange,

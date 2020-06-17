@@ -99,6 +99,13 @@ connections(process.env)
             ...chatting.apiPostMessage,
         );
 
+        //푸시 테스트
+        app.get(
+            RouterV1['networking-chatting-push-test'],
+            authCheck,
+            ...chatting.apiGetPush,
+        );
+
         /**s
          * Error Handler. Provides full stack - remove for production
          */

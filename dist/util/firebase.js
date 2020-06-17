@@ -22,10 +22,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.timestamp = exports.firebaseAdmin = void 0;
 const admin = __importStar(require("firebase-admin"));
 // const serviceAccount = require('../firebase/xsync.json');
-const serviceAccount = require('../../firebase/test-cenference-catting-firebase-adminsdk-cxjsd-23e93ef811.json');
+//const serviceAccount = require('../../firebase/test-cenference-catting-firebase-adminsdk-cxjsd-23e93ef811.json');
+const serviceAccount = require('../../firebase/xsync-project-firebase-adminsdk-jkw9b-8a97636641.json');
+// export let firebaseAdmin = admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: 'https://test-cenference-catting.firebaseio.com',
+// });
 exports.firebaseAdmin = admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://test-cenference-catting.firebaseio.com',
+    databaseURL: 'https://xsync-project.firebaseio.com',
 });
 exports.timestamp = admin.database.ServerValue.TIMESTAMP;
 //# sourceMappingURL=firebase.js.map

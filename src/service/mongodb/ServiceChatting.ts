@@ -13,6 +13,7 @@ import { EventI } from '../../entity/mongodb/main/MongoEvent';
 import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
 import { firebaseAdmin } from '../../util/firebase';
 import { Schema } from 'mongoose';
+import mongodb from 'mongodb';
 export default class ServiceChatting {
     constructor() {}
 
@@ -425,7 +426,11 @@ export default class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-
+            await this.sendPushMessage(
+                [targetAccounts._id],
+                event._id,
+                event.name,
+            );
             return query;
         }
     }
@@ -476,7 +481,18 @@ export default class ServiceChatting {
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });
-
+        const chattingMemberList = chattingLists.members;
+        const pushTargetMemberList: any[] = [];
+        chattingMemberList.forEach(memberId => {
+            if (memberId != accounts._id) {
+                pushTargetMemberList.push(memberId);
+            }
+        });
+        const eventId = chattingLists.eventId[0];
+        //targetAccountId: [Schema.Types.ObjectId],
+        //eventId: Schema.Types.ObjectId,
+        //eventName: string,
+        await this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
         return query;
     }
 
@@ -485,5 +501,65 @@ export default class ServiceChatting {
     ): Promise<any> {
         const query = ChattingLists.findById(chattingList._id).lean();
         return query;
+    }
+
+    public async sendPushMessage(
+        targetAccountId: any[],
+        eventId: Schema.Types.ObjectId,
+        eventName: string,
+    ) {
+        //1. 푸시토큰 취득
+        const findConditionArray: { _id: Schema.Types.ObjectId }[] = [];
+        await targetAccountId.forEach(accountId => {
+            findConditionArray.push({ _id: accountId });
+        });
+        const accountList = await Accounts.find(
+            {
+                $and: [
+                    { $or: findConditionArray },
+                    { 'eventList.eventId': eventId },
+                ],
+            },
+            {
+                _id: 1,
+                eventList: { $elemMatch: { eventId: eventId } },
+            },
+        );
+        const pushTokenArray: string[] = [];
+        accountList.forEach(account => {
+            pushTokenArray.push(account.eventList[0].pushToken);
+        });
+        let titleMsg = eventName;
+        let contentMsg = '새 채팅 메세지가 도착했습니다!';
+        let message = {
+            notification: {
+                title: titleMsg,
+                body: contentMsg,
+            },
+            data: {
+                eventId: eventId.toString(),
+                featureType: 'alarmBox',
+            },
+            android: {
+                ttl: 3600,
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        badge: 1,
+                    },
+                },
+            },
+            tokens: pushTokenArray,
+        };
+        firebaseAdmin
+            .messaging()
+            .sendMulticast(message)
+            .then(response => {
+                console.log('response:::', response.responses[0].error);
+            })
+            .catch(err => {
+                console.log('error:::', err);
+            });
     }
 }

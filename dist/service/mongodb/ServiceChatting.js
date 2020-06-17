@@ -381,6 +381,7 @@ class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
+                yield this.sendPushMessage([targetAccounts._id], event._id, event.name);
                 return query;
             }
         });
@@ -422,6 +423,18 @@ class ServiceChatting {
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });
+            const chattingMemberList = chattingLists.members;
+            const pushTargetMemberList = [];
+            chattingMemberList.forEach(memberId => {
+                if (memberId != accounts._id) {
+                    pushTargetMemberList.push(memberId);
+                }
+            });
+            const eventId = chattingLists.eventId[0];
+            //targetAccountId: [Schema.Types.ObjectId],
+            //eventId: Schema.Types.ObjectId,
+            //eventName: string,
+            yield this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
             return query;
         });
     }
@@ -429,6 +442,60 @@ class ServiceChatting {
         return __awaiter(this, void 0, void 0, function* () {
             const query = MongoChattingLists_1.ChattingLists.findById(chattingList._id).lean();
             return query;
+        });
+    }
+    sendPushMessage(targetAccountId, eventId, eventName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            //1. 푸시토큰 취득
+            const findConditionArray = [];
+            yield targetAccountId.forEach(accountId => {
+                findConditionArray.push({ _id: accountId });
+            });
+            const accountList = yield MongoAccounts_1.Accounts.find({
+                $and: [
+                    { $or: findConditionArray },
+                    { 'eventList.eventId': eventId },
+                ],
+            }, {
+                _id: 1,
+                eventList: { $elemMatch: { eventId: eventId } },
+            });
+            const pushTokenArray = [];
+            accountList.forEach(account => {
+                pushTokenArray.push(account.eventList[0].pushToken);
+            });
+            let titleMsg = eventName;
+            let contentMsg = '새 채팅 메세지가 도착했습니다!';
+            let message = {
+                notification: {
+                    title: titleMsg,
+                    body: contentMsg,
+                },
+                data: {
+                    eventId: eventId.toString(),
+                    featureType: 'alarmBox',
+                },
+                android: {
+                    ttl: 3600,
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            badge: 1,
+                        },
+                    },
+                },
+                tokens: pushTokenArray,
+            };
+            firebase_1.firebaseAdmin
+                .messaging()
+                .sendMulticast(message)
+                .then(response => {
+                console.log('response:::', response.responses[0].error);
+            })
+                .catch(err => {
+                console.log('error:::', err);
+            });
         });
     }
 }

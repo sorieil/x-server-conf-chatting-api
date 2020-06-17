@@ -69,6 +69,8 @@ db_1.connections(process.env)
     app.post(routerEnum_1.RouterV1['networking-chatting'], authCheck, ...chatting_1.default.apiPost);
     // 채팅방 아이디로 메세지 보내기
     app.post(routerEnum_1.RouterV1['networking-chatting-id'], authCheck, ...chatting_1.default.apiPostMessage);
+    //푸시 테스트
+    app.get(routerEnum_1.RouterV1['networking-chatting-push-test'], authCheck, ...chatting_1.default.apiGetPush);
     /**s
      * Error Handler. Provides full stack - remove for production
      */
