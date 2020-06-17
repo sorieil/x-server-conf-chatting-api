@@ -9,11 +9,11 @@ import {
     MembersInChattingLists,
     MembersI,
 } from './../../entity/mongodb/main/MongoChattingLists';
-import { EventI } from '../../entity/mongodb/main/MongoEvent';
+import { Event, EventI } from '../../entity/mongodb/main/MongoEvent';
 import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
 import { firebaseAdmin } from '../../util/firebase';
 import { Schema } from 'mongoose';
-import mongodb from 'mongodb';
+import mongodb, { ObjectID } from 'mongodb';
 export default class ServiceChatting {
     constructor() {}
 
@@ -426,7 +426,12 @@ export default class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-            this.sendPushMessage([targetAccounts._id], event._id, event.name);
+            await this.sendPushMessage(
+                accounts,
+                [targetAccounts],
+                event,
+                event.name,
+            );
             return query;
         }
     }
@@ -477,18 +482,27 @@ export default class ServiceChatting {
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });
-        const chattingMemberList = chattingLists.members;
-        const pushTargetMemberList: any[] = [];
+        const chattingMemberList = update.members;
+        const pushTargetMemberList: AccountsI[] = [];
         chattingMemberList.forEach(memberId => {
-            if (memberId != accounts._id) {
-                pushTargetMemberList.push(memberId);
-            }
+            let pushTargetAccount = new Accounts();
+            pushTargetAccount._id = memberId;
+            pushTargetMemberList.push(pushTargetAccount);
         });
-        const eventId = chattingLists.eventId[0];
+        console.log('pushTarget:::', pushTargetMemberList);
+        const eventId = update.eventId[0];
+        console.log('eventId:::::', eventId);
+        const event = new Event();
+        event._id = eventId;
         //targetAccountId: [Schema.Types.ObjectId],
         //eventId: Schema.Types.ObjectId,
         //eventName: string,
-        this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
+        await this.sendPushMessage(
+            accounts,
+            pushTargetMemberList,
+            event,
+            'Test!!!',
+        );
         return query;
     }
 
@@ -500,31 +514,42 @@ export default class ServiceChatting {
     }
 
     public async sendPushMessage(
-        targetAccountId: any[],
-        eventId: Schema.Types.ObjectId,
+        //for senderId
+        senderAccount: AccountsI,
+        //for targetId
+        targetAccounts: AccountsI[],
+        //for eventId
+        event: EventI,
         eventName: string,
     ) {
         //1. 푸시토큰 취득
-        const findConditionArray: { _id: Schema.Types.ObjectId }[] = [];
-        await targetAccountId.forEach(accountId => {
-            findConditionArray.push({ _id: accountId });
+        const findConditionArray: { _id: ObjectID }[] = [];
+        let targetId;
+        await targetAccounts.forEach(account => {
+            if (account._id.toString() != senderAccount._id.toString()) {
+                targetId = new ObjectID(account._id.toString());
+                findConditionArray.push({
+                    _id: targetId,
+                });
+            }
         });
-        const accountList = await Accounts.find(
-            {
-                $and: [
-                    { $or: findConditionArray },
-                    { 'eventList.eventId': eventId },
-                ],
-            },
-            {
-                _id: 1,
-                eventList: { $elemMatch: { eventId: eventId } },
-            },
-        );
+
+        console.log('conditionArray:::', findConditionArray);
+        console.log('eventId:::', event);
+        const accountList = await Accounts.find({
+            $or: findConditionArray,
+        });
         const pushTokenArray: string[] = [];
-        accountList.forEach(account => {
-            pushTokenArray.push(account.eventList[0].pushToken);
+        await accountList.forEach(account => {
+            account.eventList.forEach(accountEvent => {
+                console.log('accountEvent:::', accountEvent.eventId);
+                console.log('event:::', event._id);
+                if (accountEvent.eventId.toString() == event._id.toString()) {
+                    pushTokenArray.push(accountEvent.pushToken);
+                }
+            });
         });
+        console.log('pushTokenArray:::', pushTokenArray);
         let titleMsg = eventName;
         let contentMsg = '새 채팅 메세지가 도착했습니다!';
         let message = {
@@ -533,7 +558,7 @@ export default class ServiceChatting {
                 body: contentMsg,
             },
             data: {
-                eventId: eventId.toString(),
+                eventId: event._id.toString(),
                 featureType: 'alarmBox',
             },
             android: {
@@ -552,7 +577,7 @@ export default class ServiceChatting {
             .messaging()
             .sendMulticast(message)
             .then(response => {
-                console.log('response:::', response.responses[0].error);
+                console.log('response:::', response);
             })
             .catch(err => {
                 console.log('error:::', err);

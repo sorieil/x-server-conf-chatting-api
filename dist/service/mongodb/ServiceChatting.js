@@ -11,8 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const MongoChattingMessages_1 = require("./../../entity/mongodb/main/MongoChattingMessages");
 const MongoChattingLists_1 = require("./../../entity/mongodb/main/MongoChattingLists");
+const MongoEvent_1 = require("../../entity/mongodb/main/MongoEvent");
 const MongoAccounts_1 = require("../../entity/mongodb/main/MongoAccounts");
 const firebase_1 = require("../../util/firebase");
+const mongodb_1 = require("mongodb");
 class ServiceChatting {
     constructor() { }
     getChattingListByIdEventId(accounts, event) {
@@ -381,7 +383,7 @@ class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-                this.sendPushMessage([targetAccounts._id], event._id, event.name);
+                yield this.sendPushMessage(accounts, [targetAccounts], event, event.name);
                 return query;
             }
         });
@@ -423,18 +425,22 @@ class ServiceChatting {
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });
-            const chattingMemberList = chattingLists.members;
+            const chattingMemberList = update.members;
             const pushTargetMemberList = [];
             chattingMemberList.forEach(memberId => {
-                if (memberId != accounts._id) {
-                    pushTargetMemberList.push(memberId);
-                }
+                let pushTargetAccount = new MongoAccounts_1.Accounts();
+                pushTargetAccount._id = memberId;
+                pushTargetMemberList.push(pushTargetAccount);
             });
-            const eventId = chattingLists.eventId[0];
+            console.log('pushTarget:::', pushTargetMemberList);
+            const eventId = update.eventId[0];
+            console.log('eventId:::::', eventId);
+            const event = new MongoEvent_1.Event();
+            event._id = eventId;
             //targetAccountId: [Schema.Types.ObjectId],
             //eventId: Schema.Types.ObjectId,
             //eventName: string,
-            this.sendPushMessage(pushTargetMemberList, eventId, 'Test!!!');
+            yield this.sendPushMessage(accounts, pushTargetMemberList, event, 'Test!!!');
             return query;
         });
     }
@@ -444,26 +450,41 @@ class ServiceChatting {
             return query;
         });
     }
-    sendPushMessage(targetAccountId, eventId, eventName) {
+    sendPushMessage(
+    //for senderId
+    senderAccount, 
+    //for targetId
+    targetAccounts, 
+    //for eventId
+    event, eventName) {
         return __awaiter(this, void 0, void 0, function* () {
             //1. 푸시토큰 취득
             const findConditionArray = [];
-            yield targetAccountId.forEach(accountId => {
-                findConditionArray.push({ _id: accountId });
+            let targetId;
+            yield targetAccounts.forEach(account => {
+                if (account._id.toString() != senderAccount._id.toString()) {
+                    targetId = new mongodb_1.ObjectID(account._id.toString());
+                    findConditionArray.push({
+                        _id: targetId,
+                    });
+                }
             });
+            console.log('conditionArray:::', findConditionArray);
+            console.log('eventId:::', event);
             const accountList = yield MongoAccounts_1.Accounts.find({
-                $and: [
-                    { $or: findConditionArray },
-                    { 'eventList.eventId': eventId },
-                ],
-            }, {
-                _id: 1,
-                eventList: { $elemMatch: { eventId: eventId } },
+                $or: findConditionArray,
             });
             const pushTokenArray = [];
-            accountList.forEach(account => {
-                pushTokenArray.push(account.eventList[0].pushToken);
+            yield accountList.forEach(account => {
+                account.eventList.forEach(accountEvent => {
+                    console.log('accountEvent:::', accountEvent.eventId);
+                    console.log('event:::', event._id);
+                    if (accountEvent.eventId.toString() == event._id.toString()) {
+                        pushTokenArray.push(accountEvent.pushToken);
+                    }
+                });
             });
+            console.log('pushTokenArray:::', pushTokenArray);
             let titleMsg = eventName;
             let contentMsg = '새 채팅 메세지가 도착했습니다!';
             let message = {
@@ -472,7 +493,7 @@ class ServiceChatting {
                     body: contentMsg,
                 },
                 data: {
-                    eventId: eventId.toString(),
+                    eventId: event._id.toString(),
                     featureType: 'alarmBox',
                 },
                 android: {
@@ -491,7 +512,7 @@ class ServiceChatting {
                 .messaging()
                 .sendMulticast(message)
                 .then(response => {
-                console.log('response:::', response.responses[0].error);
+                console.log('response:::', response);
             })
                 .catch(err => {
                 console.log('error:::', err);
