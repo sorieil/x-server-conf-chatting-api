@@ -11,7 +11,7 @@ import {
 } from './../../entity/mongodb/main/MongoChattingLists';
 import { Event, EventI } from '../../entity/mongodb/main/MongoEvent';
 import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
-import { firebaseAdmin } from '../../util/firebase';
+import { firebaseDBAdmin, firebaseFCMAdmin } from '../../util/firebase';
 import { Schema } from 'mongoose';
 import mongodb, { ObjectID } from 'mongodb';
 export default class ServiceChatting {
@@ -379,7 +379,7 @@ export default class ServiceChatting {
 
             const query = await saveChattingMessage.save();
 
-            await firebaseAdmin
+            await firebaseDBAdmin
                 .firestore()
                 .collection('chatting')
                 .doc(initChattingList._id.toString()) // chatting id
@@ -415,7 +415,7 @@ export default class ServiceChatting {
             ];
             const query = await saveChattingMessage.save();
             // console.log('chatting message id:', query);
-            await firebaseAdmin
+            await firebaseDBAdmin
                 .firestore()
                 .collection('chatting')
                 .doc(beforeChatting[0]._id.toString()) // chatting id
@@ -431,6 +431,7 @@ export default class ServiceChatting {
                 [targetAccounts],
                 event,
                 event.name,
+                query._id,
             );
             return query;
         }
@@ -471,7 +472,7 @@ export default class ServiceChatting {
 
         const query = await saveChattingMessage.save();
         // console.log('chatting message id:', query);
-        await firebaseAdmin
+        await firebaseDBAdmin
             .firestore()
             .collection('chatting')
             .doc(chattingLists._id.toString()) // chatting id
@@ -501,7 +502,8 @@ export default class ServiceChatting {
             accounts,
             pushTargetMemberList,
             event,
-            'Test!!!',
+            'Chatting',
+            update._id,
         );
         return query;
     }
@@ -521,6 +523,7 @@ export default class ServiceChatting {
         //for eventId
         event: EventI,
         eventName: string,
+        chattingListId: string,
     ) {
         //1. 푸시토큰 취득
         const findConditionArray: { _id: ObjectID }[] = [];
@@ -559,7 +562,8 @@ export default class ServiceChatting {
             },
             data: {
                 eventId: event._id.toString(),
-                featureType: 'alarmBox',
+                chatRoomId: 
+                featureType: 'chatting',
             },
             android: {
                 ttl: 3600,
@@ -573,7 +577,7 @@ export default class ServiceChatting {
             },
             tokens: pushTokenArray,
         };
-        firebaseAdmin
+        firebaseFCMAdmin
             .messaging()
             .sendMulticast(message)
             .then(response => {

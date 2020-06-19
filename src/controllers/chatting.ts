@@ -1,4 +1,4 @@
-import { firebaseAdmin } from './../util/firebase';
+import { firebaseDBAdmin, firebaseFCMAdmin } from './../util/firebase';
 import { checkJoinedChattingMember } from './../util/validationCheck';
 import {
     ChattingLists,
@@ -372,7 +372,7 @@ const apiPostMessage = [
     },
 ];
 
-const apiGetPush = [
+const apiGetPushTest = [
     async (req: Request, res: Response) => {
         const serviceChatting = new ServiceChatting();
         const ObjectID = mongodb.ObjectID;
@@ -424,7 +424,7 @@ const apiGetPush = [
             },
             tokens: pushTokenArray,
         };
-        firebaseAdmin
+        firebaseFCMAdmin
             .messaging()
             .sendMulticast(message)
             .then(response => {
@@ -440,7 +440,7 @@ const apiGetPush = [
 
 export default {
     apiGet,
-    apiGetPush,
+    apiGetPush: apiGetPushTest,
     apiPost,
     apiPostMessage,
     apiReadStatusChange: apiPostStatusChange,
