@@ -562,7 +562,7 @@ export default class ServiceChatting {
             },
             data: {
                 eventId: event._id.toString(),
-                chatRoomId: 
+                chatRoomId: String(chattingListId),
                 featureType: 'chatting',
             },
             android: {

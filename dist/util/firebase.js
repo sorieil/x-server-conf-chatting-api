@@ -19,17 +19,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.timestamp = exports.firebaseAdmin = void 0;
+exports.timestamp = exports.firebaseFCMAdmin = exports.firebaseDBAdmin = void 0;
 const admin = __importStar(require("firebase-admin"));
 // const serviceAccount = require('../firebase/xsync.json');
-//const serviceAccount = require('../../firebase/test-cenference-catting-firebase-adminsdk-cxjsd-23e93ef811.json');
-const serviceAccount = require('../../firebase/xsync-project-firebase-adminsdk-jkw9b-8a97636641.json');
-// export let firebaseAdmin = admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: 'https://test-cenference-catting.firebaseio.com',
-// });
-exports.firebaseAdmin = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+const serviceDatabaseAccount = require('../../firebase/test-cenference-catting-firebase-adminsdk-cxjsd-23e93ef811.json');
+const serviceFCMAccount = require('../../firebase/xsync-project-firebase-adminsdk-jkw9b-8a97636641.json');
+exports.firebaseDBAdmin = admin.initializeApp({
+    credential: admin.credential.cert(serviceDatabaseAccount),
+    databaseURL: 'https://test-cenference-catting.firebaseio.com',
+});
+exports.firebaseFCMAdmin = admin.initializeApp({
+    credential: admin.credential.cert(serviceFCMAccount),
     databaseURL: 'https://xsync-project.firebaseio.com',
 });
 exports.timestamp = admin.database.ServerValue.TIMESTAMP;

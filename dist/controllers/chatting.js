@@ -306,7 +306,7 @@ const apiPostMessage = [
         }
     }),
 ];
-const apiGetPush = [
+const apiGetPushTest = [
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const serviceChatting = new ServiceChatting_1.default();
         const ObjectID = mongodb_1.default.ObjectID;
@@ -349,7 +349,7 @@ const apiGetPush = [
             },
             tokens: pushTokenArray,
         };
-        firebase_1.firebaseAdmin
+        firebase_1.firebaseFCMAdmin
             .messaging()
             .sendMulticast(message)
             .then(response => {
@@ -364,7 +364,7 @@ const apiGetPush = [
 ];
 exports.default = {
     apiGet,
-    apiGetPush,
+    apiGetPush: apiGetPushTest,
     apiPost,
     apiPostMessage,
     apiReadStatusChange: apiPostStatusChange,

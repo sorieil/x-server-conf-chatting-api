@@ -337,7 +337,7 @@ class ServiceChatting {
                     },
                 ];
                 const query = yield saveChattingMessage.save();
-                yield firebase_1.firebaseAdmin
+                yield firebase_1.firebaseDBAdmin
                     .firestore()
                     .collection('chatting')
                     .doc(initChattingList._id.toString()) // chatting id
@@ -372,7 +372,7 @@ class ServiceChatting {
                 ];
                 const query = yield saveChattingMessage.save();
                 // console.log('chatting message id:', query);
-                yield firebase_1.firebaseAdmin
+                yield firebase_1.firebaseDBAdmin
                     .firestore()
                     .collection('chatting')
                     .doc(beforeChatting[0]._id.toString()) // chatting id
@@ -383,7 +383,7 @@ class ServiceChatting {
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
-                yield this.sendPushMessage(accounts, [targetAccounts], event, event.name);
+                yield this.sendPushMessage(accounts, [targetAccounts], event, event.name, query._id);
                 return query;
             }
         });
@@ -414,7 +414,7 @@ class ServiceChatting {
             ];
             const query = yield saveChattingMessage.save();
             // console.log('chatting message id:', query);
-            yield firebase_1.firebaseAdmin
+            yield firebase_1.firebaseDBAdmin
                 .firestore()
                 .collection('chatting')
                 .doc(chattingLists._id.toString()) // chatting id
@@ -440,7 +440,7 @@ class ServiceChatting {
             //targetAccountId: [Schema.Types.ObjectId],
             //eventId: Schema.Types.ObjectId,
             //eventName: string,
-            yield this.sendPushMessage(accounts, pushTargetMemberList, event, 'Test!!!');
+            yield this.sendPushMessage(accounts, pushTargetMemberList, event, 'Chatting', update._id);
             return query;
         });
     }
@@ -456,7 +456,7 @@ class ServiceChatting {
     //for targetId
     targetAccounts, 
     //for eventId
-    event, eventName) {
+    event, eventName, chattingListId) {
         return __awaiter(this, void 0, void 0, function* () {
             //1. 푸시토큰 취득
             const findConditionArray = [];
@@ -494,7 +494,8 @@ class ServiceChatting {
                 },
                 data: {
                     eventId: event._id.toString(),
-                    featureType: 'alarmBox',
+                    chatRoomId: String(chattingListId),
+                    featureType: 'chatting',
                 },
                 android: {
                     ttl: 3600,
@@ -508,7 +509,7 @@ class ServiceChatting {
                 },
                 tokens: pushTokenArray,
             };
-            firebase_1.firebaseAdmin
+            firebase_1.firebaseFCMAdmin
                 .messaging()
                 .sendMulticast(message)
                 .then(response => {
