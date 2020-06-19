@@ -27,10 +27,10 @@ const serviceFCMAccount = require('../../firebase/xsync-project-firebase-adminsd
 exports.firebaseDBAdmin = admin.initializeApp({
     credential: admin.credential.cert(serviceDatabaseAccount),
     databaseURL: 'https://test-cenference-catting.firebaseio.com',
-});
+}, 'Database');
 exports.firebaseFCMAdmin = admin.initializeApp({
     credential: admin.credential.cert(serviceFCMAccount),
     databaseURL: 'https://xsync-project.firebaseio.com',
-});
+}, 'FCM');
 exports.timestamp = admin.database.ServerValue.TIMESTAMP;
 //# sourceMappingURL=firebase.js.map
