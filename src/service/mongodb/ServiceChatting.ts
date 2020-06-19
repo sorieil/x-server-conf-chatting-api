@@ -561,6 +561,8 @@ export default class ServiceChatting {
                 body: contentMsg,
             },
             data: {
+                title: titleMsg,
+                body: contentMsg,
                 eventId: event._id.toString(),
                 chatRoomId: String(chattingListId),
                 featureType: 'chatting',
