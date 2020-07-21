@@ -14,6 +14,9 @@ import { Accounts, AccountsI } from '../../entity/mongodb/main/MongoAccounts';
 import { firebaseDBAdmin, firebaseFCMAdmin } from '../../util/firebase';
 import { Schema } from 'mongoose';
 import mongodb, { ObjectID } from 'mongodb';
+const db = firebaseDBAdmin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
+
 export default class ServiceChatting {
     constructor() {}
 
@@ -315,6 +318,8 @@ export default class ServiceChatting {
         targetAccounts: AccountsI,
         event: EventI,
         message: string,
+        image: string,
+        imageSize: number,
     ): Promise<any> {
         // 기존 채팅 내역이 있는지 체크 한다.
         const beforeChatting: ChattingListsI[] = await this.checkInitChattingHistory(
@@ -365,6 +370,14 @@ export default class ServiceChatting {
             // 채팅내용 저장
 
             const saveChattingMessage = new ChattingMessages();
+            console.log('image:::', image);
+            if (image === undefined || image == '' || image === null) {
+                saveChattingMessage.type = 'text';
+            } else {
+                saveChattingMessage.image = image;
+                saveChattingMessage.imageSize = imageSize;
+                saveChattingMessage.type = 'image';
+            }
             saveChattingMessage.accountId = accounts._id;
             saveChattingMessage.createdAt = currentDate;
             saveChattingMessage.messages = message;
@@ -378,15 +391,16 @@ export default class ServiceChatting {
             ];
 
             const query = await saveChattingMessage.save();
-
-            await firebaseDBAdmin
-                .firestore()
+            await db
                 .collection('chatting')
                 .doc(initChattingList._id.toString()) // chatting id
                 .collection('messages')
                 .doc(query._id.toString())
                 .set({
                     message: message,
+                    type: saveChattingMessage.type,
+                    image: saveChattingMessage.image,
+                    imageSize: saveChattingMessage.imageSize,
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
@@ -402,6 +416,14 @@ export default class ServiceChatting {
 
             // 채팅내용 저장
             const saveChattingMessage = new ChattingMessages();
+            console.log('imageOld:::', image);
+            if (image === undefined || image == '' || image === null) {
+                saveChattingMessage.type = 'text';
+            } else {
+                saveChattingMessage.image = image;
+                saveChattingMessage.imageSize = imageSize;
+                saveChattingMessage.type = 'image';
+            }
             saveChattingMessage.accountId = accounts._id;
             saveChattingMessage.createdAt = new Date();
             saveChattingMessage.messages = message;
@@ -415,14 +437,17 @@ export default class ServiceChatting {
             ];
             const query = await saveChattingMessage.save();
             // console.log('chatting message id:', query);
-            await firebaseDBAdmin
-                .firestore()
+
+            await db
                 .collection('chatting')
                 .doc(beforeChatting[0]._id.toString()) // chatting id
                 .collection('messages')
                 .doc(query._id.toString())
                 .set({
                     message: message,
+                    type: saveChattingMessage.type,
+                    image: saveChattingMessage.image,
+                    imageSize: saveChattingMessage.imageSize,
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
@@ -441,6 +466,8 @@ export default class ServiceChatting {
         accounts: AccountsI,
         chattingLists: ChattingListsI,
         message: string,
+        image: string,
+        imageSize: number,
     ): Promise<any> {
         const chattingList = new ChattingLists();
         chattingList.lastText = message;
@@ -451,13 +478,23 @@ export default class ServiceChatting {
             chattingLists._id,
             { lastText: message, updatedAt: new Date() },
         );
-        console.log('new ChattingList:', chattingList);
-        console.log('Received ChattingList:', chattingLists);
-        console.log('UpdateOne:', update);
+        //console.log('new ChattingList:', chattingList);
+        //console.log('Received ChattingList:', chattingLists);
+        //console.log('UpdateOne:', update);
 
         // 채팅내용 저장
         const saveChattingMessage = new ChattingMessages();
         const currentDate = new Date();
+        console.log('imageNew:::', image);
+        if (image === undefined || image == '' || image === null) {
+            console.log('imageHello:::', image);
+            saveChattingMessage.type = 'text';
+        } else {
+            saveChattingMessage.image = image;
+            saveChattingMessage.imageSize = imageSize;
+            saveChattingMessage.type = 'image';
+        }
+
         saveChattingMessage.accountId = accounts._id;
         saveChattingMessage.createdAt = currentDate;
         saveChattingMessage.messages = message;
@@ -472,14 +509,16 @@ export default class ServiceChatting {
 
         const query = await saveChattingMessage.save();
         // console.log('chatting message id:', query);
-        await firebaseDBAdmin
-            .firestore()
+        await db
             .collection('chatting')
             .doc(chattingLists._id.toString()) // chatting id
             .collection('messages')
             .doc(query._id.toString())
             .set({
                 message: message,
+                type: saveChattingMessage.type,
+                image: saveChattingMessage.image,
+                imageSize: saveChattingMessage.imageSize,
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });

@@ -15,6 +15,8 @@ const MongoEvent_1 = require("../../entity/mongodb/main/MongoEvent");
 const MongoAccounts_1 = require("../../entity/mongodb/main/MongoAccounts");
 const firebase_1 = require("../../util/firebase");
 const mongodb_1 = require("mongodb");
+const db = firebase_1.firebaseDBAdmin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
 class ServiceChatting {
     constructor() { }
     getChattingListByIdEventId(accounts, event) {
@@ -287,7 +289,7 @@ class ServiceChatting {
      * @param event 어떤 이벤트에서 채팅하는지
      * @param message 보내고자 하는 메세지
      */
-    postSendMessage(accounts, targetAccounts, event, message) {
+    postSendMessage(accounts, targetAccounts, event, message, image, imageSize) {
         return __awaiter(this, void 0, void 0, function* () {
             // 기존 채팅 내역이 있는지 체크 한다.
             const beforeChatting = yield this.checkInitChattingHistory(accounts, targetAccounts, event._id);
@@ -325,6 +327,15 @@ class ServiceChatting {
                 const initChattingList = yield saveChattingList.save();
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
+                console.log('image:::', image);
+                if (image === undefined || image == '' || image === null) {
+                    saveChattingMessage.type = 'text';
+                }
+                else {
+                    saveChattingMessage.image = image;
+                    saveChattingMessage.imageSize = imageSize;
+                    saveChattingMessage.type = 'image';
+                }
                 saveChattingMessage.accountId = accounts._id;
                 saveChattingMessage.createdAt = currentDate;
                 saveChattingMessage.messages = message;
@@ -337,14 +348,16 @@ class ServiceChatting {
                     },
                 ];
                 const query = yield saveChattingMessage.save();
-                yield firebase_1.firebaseDBAdmin
-                    .firestore()
+                yield db
                     .collection('chatting')
                     .doc(initChattingList._id.toString()) // chatting id
                     .collection('messages')
                     .doc(query._id.toString())
                     .set({
                     message: message,
+                    type: saveChattingMessage.type,
+                    image: saveChattingMessage.image,
+                    imageSize: saveChattingMessage.imageSize,
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
@@ -359,6 +372,15 @@ class ServiceChatting {
                 });
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
+                console.log('imageOld:::', image);
+                if (image === undefined || image == '' || image === null) {
+                    saveChattingMessage.type = 'text';
+                }
+                else {
+                    saveChattingMessage.image = image;
+                    saveChattingMessage.imageSize = imageSize;
+                    saveChattingMessage.type = 'image';
+                }
                 saveChattingMessage.accountId = accounts._id;
                 saveChattingMessage.createdAt = new Date();
                 saveChattingMessage.messages = message;
@@ -372,14 +394,16 @@ class ServiceChatting {
                 ];
                 const query = yield saveChattingMessage.save();
                 // console.log('chatting message id:', query);
-                yield firebase_1.firebaseDBAdmin
-                    .firestore()
+                yield db
                     .collection('chatting')
                     .doc(beforeChatting[0]._id.toString()) // chatting id
                     .collection('messages')
                     .doc(query._id.toString())
                     .set({
                     message: message,
+                    type: saveChattingMessage.type,
+                    image: saveChattingMessage.image,
+                    imageSize: saveChattingMessage.imageSize,
                     accountId: accounts._id.toString(),
                     createdAt: new Date(),
                 });
@@ -388,7 +412,7 @@ class ServiceChatting {
             }
         });
     }
-    postSendMessageById(accounts, chattingLists, message) {
+    postSendMessageById(accounts, chattingLists, message, image, imageSize) {
         return __awaiter(this, void 0, void 0, function* () {
             const chattingList = new MongoChattingLists_1.ChattingLists();
             chattingList.lastText = message;
@@ -401,6 +425,16 @@ class ServiceChatting {
             // 채팅내용 저장
             const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
             const currentDate = new Date();
+            console.log('imageNew:::', image);
+            if (image === undefined || image == '' || image === null) {
+                console.log('imageHello:::', image);
+                saveChattingMessage.type = 'text';
+            }
+            else {
+                saveChattingMessage.image = image;
+                saveChattingMessage.imageSize = imageSize;
+                saveChattingMessage.type = 'image';
+            }
             saveChattingMessage.accountId = accounts._id;
             saveChattingMessage.createdAt = currentDate;
             saveChattingMessage.messages = message;
@@ -414,14 +448,16 @@ class ServiceChatting {
             ];
             const query = yield saveChattingMessage.save();
             // console.log('chatting message id:', query);
-            yield firebase_1.firebaseDBAdmin
-                .firestore()
+            yield db
                 .collection('chatting')
                 .doc(chattingLists._id.toString()) // chatting id
                 .collection('messages')
                 .doc(query._id.toString())
                 .set({
                 message: message,
+                type: saveChattingMessage.type,
+                image: saveChattingMessage.image,
+                imageSize: saveChattingMessage.imageSize,
                 accountId: accounts._id.toString(),
                 createdAt: new Date(),
             });

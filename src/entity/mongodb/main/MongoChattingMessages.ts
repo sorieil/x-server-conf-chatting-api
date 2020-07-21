@@ -37,6 +37,12 @@ export interface ChattingMessagesI extends Document {
     fileupload: any[];
     createdAt: Date;
     readMembers: any[];
+    //이미지 업로드 시 이미지 url
+    image: string;
+    //이미지 업로드인지 텍스트 업로드인지 타입으로 가리기
+    type: string;
+    //이미지 원본 크기의 값(가로 사이즈)
+    imageSize: number;
 }
 
 export const ChattingMessagesSchema: Schema = new Schema({
@@ -46,6 +52,9 @@ export const ChattingMessagesSchema: Schema = new Schema({
     fileupload: { type: Array },
     createdAt: { type: Date },
     readMembers: { type: Array },
+    image: { type: String },
+    type: { type: String },
+    imageSize: { type: Number },
 });
 
 export const ChattingMessages = mongoose.model<ChattingMessagesI>(

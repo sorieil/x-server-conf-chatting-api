@@ -274,9 +274,14 @@ const apiPost = [
     [
         checkTargetAccountIdAndEventIdExist.apply(this),
         body('message')
-            .not()
-            .isEmpty()
+            .optional()
             .isString(),
+        body('imageUrl')
+            .optional()
+            .isString(),
+        body('imageSize')
+            .optional()
+            .isNumeric(),
     ],
     async (req: Request, res: Response) => {
         try {
@@ -291,13 +296,30 @@ const apiPost = [
             accounts._id = user._id;
             event._id = user.eventId;
 
-            if (!errors.isEmpty()) {
-                responseJson(res, errors.array(), method, 'invalid');
-                return;
+            // if (!errors.isEmpty()) {
+            //     responseJson(res, errors.array(), method, 'invalid');
+            //     return;
+            // }
+
+            if (req.body.message === undefined || req.body.message == '') {
+                if (
+                    req.body.imageUrl === undefined ||
+                    req.body.imageSize === undefined
+                ) {
+                    responseJson(
+                        res,
+                        [{ error: 'Input message or image' }],
+                        method,
+                        'invalid',
+                    );
+                    return;
+                }
             }
 
             const targetAccounts = new Accounts();
             const message = req.body.message;
+            const imageUrl = req.body.imageUrl;
+            const imageSize = req.body.imageSize;
             const serviceChatting = new ServiceChatting();
 
             targetAccounts._id = req.body.targetAccountId;
@@ -307,6 +329,8 @@ const apiPost = [
                 targetAccounts,
                 event,
                 message,
+                imageUrl,
+                imageSize,
             );
 
             //발신자 이외의 사람들에게 푸시를 전송한다.
@@ -327,6 +351,8 @@ const apiPostMessage = [
             .not()
             .isEmpty()
             .isString(),
+        body('imageUrl').isString(),
+        body('imageSize').isNumeric(),
     ],
     async (req: Request, res: Response) => {
         try {
@@ -336,12 +362,29 @@ const apiPostMessage = [
             const accounts = new Accounts();
             accounts._id = user._id;
 
-            if (!errors.isEmpty()) {
-                responseJson(res, errors.array(), method, 'invalid');
-                return;
+            // if (!errors.isEmpty()) {
+            //     responseJson(res, errors.array(), method, 'invalid');
+            //     return;
+            // }
+
+            if (req.body.message === undefined || req.body.message == '') {
+                if (
+                    req.body.imageUrl === undefined ||
+                    req.body.imageSize === undefined
+                ) {
+                    responseJson(
+                        res,
+                        [{ error: 'Input message or image' }],
+                        method,
+                        'invalid',
+                    );
+                    return;
+                }
             }
 
             const message = req.body.message;
+            const imageUrl = req.body.imageUrl;
+            const imageSize = req.body.imageSize;
             const serviceChatting = new ServiceChatting();
             const chattingLists = new ChattingLists();
             chattingLists._id = req.params.chattingListId;
@@ -354,6 +397,8 @@ const apiPostMessage = [
                     accounts,
                     chattingLists,
                     message,
+                    imageUrl,
+                    imageSize,
                 );
                 responseJson(res, [query], method, 'success');
             } else {

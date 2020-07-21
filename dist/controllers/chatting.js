@@ -233,9 +233,14 @@ const apiPost = [
     [
         validationCheck_2.checkTargetAccountIdAndEventIdExist.apply(this),
         express_validator_1.body('message')
-            .not()
-            .isEmpty()
+            .optional()
             .isString(),
+        express_validator_1.body('imageUrl')
+            .optional()
+            .isString(),
+        express_validator_1.body('imageSize')
+            .optional()
+            .isNumeric(),
     ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -248,15 +253,24 @@ const apiPost = [
             const accounts = new MongoAccounts_1.Accounts();
             accounts._id = user._id;
             event._id = user.eventId;
-            if (!errors.isEmpty()) {
-                common_1.responseJson(res, errors.array(), method, 'invalid');
-                return;
+            // if (!errors.isEmpty()) {
+            //     responseJson(res, errors.array(), method, 'invalid');
+            //     return;
+            // }
+            if (req.body.message === undefined || req.body.message == '') {
+                if (req.body.imageUrl === undefined ||
+                    req.body.imageSize === undefined) {
+                    common_1.responseJson(res, [{ error: 'Input message or image' }], method, 'invalid');
+                    return;
+                }
             }
             const targetAccounts = new MongoAccounts_1.Accounts();
             const message = req.body.message;
+            const imageUrl = req.body.imageUrl;
+            const imageSize = req.body.imageSize;
             const serviceChatting = new ServiceChatting_1.default();
             targetAccounts._id = req.body.targetAccountId;
-            const query = yield serviceChatting.postSendMessage(accounts, targetAccounts, event, message);
+            const query = yield serviceChatting.postSendMessage(accounts, targetAccounts, event, message, imageUrl, imageSize);
             //발신자 이외의 사람들에게 푸시를 전송한다.
             common_1.responseJson(res, [query], method, 'success');
         }
@@ -274,6 +288,8 @@ const apiPostMessage = [
             .not()
             .isEmpty()
             .isString(),
+        express_validator_1.body('imageUrl').isString(),
+        express_validator_1.body('imageSize').isNumeric(),
     ],
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -282,17 +298,26 @@ const apiPostMessage = [
             const user = req.user;
             const accounts = new MongoAccounts_1.Accounts();
             accounts._id = user._id;
-            if (!errors.isEmpty()) {
-                common_1.responseJson(res, errors.array(), method, 'invalid');
-                return;
+            // if (!errors.isEmpty()) {
+            //     responseJson(res, errors.array(), method, 'invalid');
+            //     return;
+            // }
+            if (req.body.message === undefined || req.body.message == '') {
+                if (req.body.imageUrl === undefined ||
+                    req.body.imageSize === undefined) {
+                    common_1.responseJson(res, [{ error: 'Input message or image' }], method, 'invalid');
+                    return;
+                }
             }
             const message = req.body.message;
+            const imageUrl = req.body.imageUrl;
+            const imageSize = req.body.imageSize;
             const serviceChatting = new ServiceChatting_1.default();
             const chattingLists = new MongoChattingLists_1.ChattingLists();
             chattingLists._id = req.params.chattingListId;
             const queryChattingListId = yield serviceChatting.checkChattingListIdExist(chattingLists);
             if (queryChattingListId) {
-                const query = yield serviceChatting.postSendMessageById(accounts, chattingLists, message);
+                const query = yield serviceChatting.postSendMessageById(accounts, chattingLists, message, imageUrl, imageSize);
                 common_1.responseJson(res, [query], method, 'success');
             }
             else {
