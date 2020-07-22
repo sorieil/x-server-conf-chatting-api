@@ -24,13 +24,12 @@ export default class ServiceChatting {
         accounts: AccountsI,
         event: EventI,
     ): Promise<any> {
+        const targetEventIdStr: string = event._id;
+
         const query = await ChattingLists.aggregate([
             {
                 $match: {
-                    $and: [
-                        { members: accounts._id },
-                        //{ eventId: { $in: [event._id] } },
-                    ],
+                    $and: [{ members: accounts._id }, { eventId: event._id }],
                 },
             },
             {
@@ -82,7 +81,6 @@ export default class ServiceChatting {
                 },
             },
         ]);
-
         return query;
     }
 
@@ -121,10 +119,7 @@ export default class ServiceChatting {
     ): Promise<number> {
         const chattingListIds = [];
         const chattingList = await ChattingLists.find({
-            $and: [
-                { eventId: { $in: [eventId] } },
-                { members: { $in: [accountId] } },
-            ],
+            $and: [{ eventId: eventId }, { members: { $in: [accountId] } }],
         });
         for (let i = 0; i < chattingList.length; i++) {
             chattingListIds.push({
@@ -354,7 +349,7 @@ export default class ServiceChatting {
             memberBucket.push(await this.batchMember(accounts));
             memberBucket.push(await this.batchMember(queryTargetAccounts));
 
-            console.log('채팅 맴버 등록:', memberBucket);
+            //console.log('채팅 맴버 등록:', memberBucket);
 
             // 채팅방 생성
             const saveChattingList = new ChattingLists();
@@ -370,7 +365,7 @@ export default class ServiceChatting {
             // 채팅내용 저장
 
             const saveChattingMessage = new ChattingMessages();
-            console.log('image:::', image);
+            //console.log('image:::', image);
             if (image === undefined || image == '' || image === null) {
                 saveChattingMessage.type = 'text';
             } else {
@@ -416,7 +411,7 @@ export default class ServiceChatting {
 
             // 채팅내용 저장
             const saveChattingMessage = new ChattingMessages();
-            console.log('imageOld:::', image);
+            //console.log('imageOld:::', image);
             if (image === undefined || image == '' || image === null) {
                 saveChattingMessage.type = 'text';
             } else {
@@ -485,9 +480,9 @@ export default class ServiceChatting {
         // 채팅내용 저장
         const saveChattingMessage = new ChattingMessages();
         const currentDate = new Date();
-        console.log('imageNew:::', image);
+        //console.log('imageNew:::', image);
         if (image === undefined || image == '' || image === null) {
-            console.log('imageHello:::', image);
+            //console.log('imageHello:::', image);
             saveChattingMessage.type = 'text';
         } else {
             saveChattingMessage.image = image;
@@ -529,9 +524,9 @@ export default class ServiceChatting {
             pushTargetAccount._id = memberId;
             pushTargetMemberList.push(pushTargetAccount);
         });
-        console.log('pushTarget:::', pushTargetMemberList);
+        //console.log('pushTarget:::', pushTargetMemberList);
         const eventId = update.eventId[0];
-        console.log('eventId:::::', eventId);
+        //console.log('eventId:::::', eventId);
         const event = new Event();
         event._id = eventId;
         //targetAccountId: [Schema.Types.ObjectId],
@@ -576,22 +571,22 @@ export default class ServiceChatting {
             }
         });
 
-        console.log('conditionArray:::', findConditionArray);
-        console.log('eventId:::', event);
+        //console.log('conditionArray:::', findConditionArray);
+        //console.log('eventId:::', event);
         const accountList = await Accounts.find({
             $or: findConditionArray,
         });
         const pushTokenArray: string[] = [];
         await accountList.forEach(account => {
             account.eventList.forEach(accountEvent => {
-                console.log('accountEvent:::', accountEvent.eventId);
-                console.log('event:::', event._id);
+                //console.log('accountEvent:::', accountEvent.eventId);
+                //console.log('event:::', event._id);
                 if (accountEvent.eventId.toString() == event._id.toString()) {
                     pushTokenArray.push(accountEvent.pushToken);
                 }
             });
         });
-        console.log('pushTokenArray:::', pushTokenArray);
+        //console.log('pushTokenArray:::', pushTokenArray);
         let titleMsg = eventName;
         let contentMsg = '새 채팅 메세지가 도착했습니다!';
         let message = {

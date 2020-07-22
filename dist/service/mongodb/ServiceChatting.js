@@ -21,12 +21,11 @@ class ServiceChatting {
     constructor() { }
     getChattingListByIdEventId(accounts, event) {
         return __awaiter(this, void 0, void 0, function* () {
+            const targetEventIdStr = event._id;
             const query = yield MongoChattingLists_1.ChattingLists.aggregate([
                 {
                     $match: {
-                        $and: [
-                            { members: accounts._id },
-                        ],
+                        $and: [{ members: accounts._id }, { eventId: event._id }],
                     },
                 },
                 {
@@ -110,10 +109,7 @@ class ServiceChatting {
         return __awaiter(this, void 0, void 0, function* () {
             const chattingListIds = [];
             const chattingList = yield MongoChattingLists_1.ChattingLists.find({
-                $and: [
-                    { eventId: { $in: [eventId] } },
-                    { members: { $in: [accountId] } },
-                ],
+                $and: [{ eventId: eventId }, { members: { $in: [accountId] } }],
             });
             for (let i = 0; i < chattingList.length; i++) {
                 chattingListIds.push({
@@ -314,7 +310,7 @@ class ServiceChatting {
                 const memberBucket = [];
                 memberBucket.push(yield this.batchMember(accounts));
                 memberBucket.push(yield this.batchMember(queryTargetAccounts));
-                console.log('채팅 맴버 등록:', memberBucket);
+                //console.log('채팅 맴버 등록:', memberBucket);
                 // 채팅방 생성
                 const saveChattingList = new MongoChattingLists_1.ChattingLists();
                 saveChattingList.lastText = message;
@@ -327,7 +323,7 @@ class ServiceChatting {
                 const initChattingList = yield saveChattingList.save();
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
-                console.log('image:::', image);
+                //console.log('image:::', image);
                 if (image === undefined || image == '' || image === null) {
                     saveChattingMessage.type = 'text';
                 }
@@ -372,7 +368,7 @@ class ServiceChatting {
                 });
                 // 채팅내용 저장
                 const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
-                console.log('imageOld:::', image);
+                //console.log('imageOld:::', image);
                 if (image === undefined || image == '' || image === null) {
                     saveChattingMessage.type = 'text';
                 }
@@ -419,15 +415,15 @@ class ServiceChatting {
             chattingList.updatedAt = new Date();
             // 채팅 상태 업데이트
             const update = yield MongoChattingLists_1.ChattingLists.findByIdAndUpdate(chattingLists._id, { lastText: message, updatedAt: new Date() });
-            console.log('new ChattingList:', chattingList);
-            console.log('Received ChattingList:', chattingLists);
-            console.log('UpdateOne:', update);
+            //console.log('new ChattingList:', chattingList);
+            //console.log('Received ChattingList:', chattingLists);
+            //console.log('UpdateOne:', update);
             // 채팅내용 저장
             const saveChattingMessage = new MongoChattingMessages_1.ChattingMessages();
             const currentDate = new Date();
-            console.log('imageNew:::', image);
+            //console.log('imageNew:::', image);
             if (image === undefined || image == '' || image === null) {
-                console.log('imageHello:::', image);
+                //console.log('imageHello:::', image);
                 saveChattingMessage.type = 'text';
             }
             else {
@@ -468,9 +464,9 @@ class ServiceChatting {
                 pushTargetAccount._id = memberId;
                 pushTargetMemberList.push(pushTargetAccount);
             });
-            console.log('pushTarget:::', pushTargetMemberList);
+            //console.log('pushTarget:::', pushTargetMemberList);
             const eventId = update.eventId[0];
-            console.log('eventId:::::', eventId);
+            //console.log('eventId:::::', eventId);
             const event = new MongoEvent_1.Event();
             event._id = eventId;
             //targetAccountId: [Schema.Types.ObjectId],
@@ -505,22 +501,22 @@ class ServiceChatting {
                     });
                 }
             });
-            console.log('conditionArray:::', findConditionArray);
-            console.log('eventId:::', event);
+            //console.log('conditionArray:::', findConditionArray);
+            //console.log('eventId:::', event);
             const accountList = yield MongoAccounts_1.Accounts.find({
                 $or: findConditionArray,
             });
             const pushTokenArray = [];
             yield accountList.forEach(account => {
                 account.eventList.forEach(accountEvent => {
-                    console.log('accountEvent:::', accountEvent.eventId);
-                    console.log('event:::', event._id);
+                    //console.log('accountEvent:::', accountEvent.eventId);
+                    //console.log('event:::', event._id);
                     if (accountEvent.eventId.toString() == event._id.toString()) {
                         pushTokenArray.push(accountEvent.pushToken);
                     }
                 });
             });
-            console.log('pushTokenArray:::', pushTokenArray);
+            //console.log('pushTokenArray:::', pushTokenArray);
             let titleMsg = eventName;
             let contentMsg = '새 채팅 메세지가 도착했습니다!';
             let message = {
