@@ -368,6 +368,8 @@ export default class ServiceChatting {
             //console.log('image:::', image);
             if (image === undefined || image == '' || image === null) {
                 saveChattingMessage.type = 'text';
+                saveChattingMessage.image = '';
+                saveChattingMessage.imageSize = 0;
             } else {
                 saveChattingMessage.image = image;
                 saveChattingMessage.imageSize = imageSize;
@@ -414,6 +416,8 @@ export default class ServiceChatting {
             //console.log('imageOld:::', image);
             if (image === undefined || image == '' || image === null) {
                 saveChattingMessage.type = 'text';
+                saveChattingMessage.image = '';
+                saveChattingMessage.imageSize = 0;
             } else {
                 saveChattingMessage.image = image;
                 saveChattingMessage.imageSize = imageSize;
@@ -484,6 +488,8 @@ export default class ServiceChatting {
         if (image === undefined || image == '' || image === null) {
             //console.log('imageHello:::', image);
             saveChattingMessage.type = 'text';
+            saveChattingMessage.image = '';
+            saveChattingMessage.imageSize = 0;
         } else {
             saveChattingMessage.image = image;
             saveChattingMessage.imageSize = imageSize;
